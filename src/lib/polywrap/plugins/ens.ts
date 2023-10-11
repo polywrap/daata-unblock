@@ -1,8 +1,8 @@
-import { API_URL } from "@/constants";
-import http from "@/lib/http";
 import { PluginModule, PluginPackage } from "@polywrap/plugin-js";
 
-const API_URL = "https://api.thegraph.com/subgraphs/name/ensdomains/ens";
+import http from "@/lib/http";
+
+const GRAPH_API_URL = "https://api.thegraph.com/subgraphs/name/ensdomains/ens";
 
 export interface DomainInfo {
   id: string;
@@ -44,7 +44,7 @@ export class EnsPlugin extends PluginModule<{}> {
   `;
 
     try {
-      const response = await http.post(API_URL, {
+      const response = await http.post(GRAPH_API_URL, {
         query,
       });
 
@@ -62,7 +62,7 @@ export class EnsPlugin extends PluginModule<{}> {
 }
 
 export const makeEnsPlugin = () => {
-  return PluginPackage.from(new EnsPlugin(), {
+  return PluginPackage.from(new EnsPlugin({}), {
     name: "ens",
     type: "plugin",
     version: "0.1.0",
