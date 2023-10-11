@@ -1,10 +1,11 @@
-import dayjs from "dayjs";
 import {
-  TextMessage,
   InvocationMessage,
   InvocationResultMessage,
+  TextMessage,
 } from "./message";
+
 import { User } from "./user";
+import dayjs from "dayjs";
 
 export interface ConversationDTO {
   id: string;
@@ -14,6 +15,7 @@ export interface ConversationDTO {
   error?: string;
   messages: (InvocationMessage | TextMessage | InvocationResultMessage)[];
   user: User;
+  agentChatId: string;
 }
 
 export interface Conversation {
@@ -25,6 +27,7 @@ export interface Conversation {
   completed: boolean;
   error?: string;
   lastUpdated: dayjs.Dayjs;
+  agentChatId: string;
 }
 
 export const conversationDTOToConversation = (

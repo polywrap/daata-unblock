@@ -47,10 +47,10 @@ const Conversation = () => {
     conversation.completed ||
     conversationIsOptimisticPlaceholder;
 
-    const onSuggestionSelect = (prompt: string) => {
-      setPromptValue(prompt);
-      promptRef.current?.focus();
-    }
+  const onSuggestionSelect = (prompt: string) => {
+    setPromptValue(prompt);
+    promptRef.current?.focus();
+  };
 
   return (
     <>
@@ -60,6 +60,9 @@ const Conversation = () => {
             className="flex-1 flex flex-col gap-2 w-full max-w-3xl py-10"
             ref={listRef}
           >
+            {conversation?.agentChatId && (
+              <li className="text-xs text-gray-500">Agent chat ID: {conversation.agentChatId}</li>
+            )}
             {conversation?.messages.map((message, i) => {
               switch (message.kind) {
                 case MessageType.InvocationMessage:
