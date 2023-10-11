@@ -9,10 +9,11 @@ import {
   ethereumWalletPlugin,
 } from "@polywrap/ethereum-wallet-js";
 import { makeAddressBookPlugin } from "./plugins/AddressBook";
+import { makeEnsPlugin } from "./plugins/ens";
 import { getMagic } from "../magic";
 import { useProviderStore } from "@/stores/providerStore";
 import { safeApiPlugin } from "@polywrap/safe-api-plugin";
-import { EthersAdapter } from '@safe-global/protocol-kit'
+import { EthersAdapter } from "@safe-global/protocol-kit";
 
 const getBasePolywrapClientConfigBuilder = () => {
   const builder = new PolywrapClientConfigBuilder();
@@ -26,6 +27,10 @@ const getBasePolywrapClientConfigBuilder = () => {
   builder.setPackage(
     "wrap://wrapscan.io/polywrap/addressBook@1.1.1",
     makeAddressBookPlugin()
+  );
+  builder.setPackage(
+    "wrap://wrapscan.io/polywrap/ens-plugin@1.0",
+    makeEnsPlugin()
   );
 
   return builder;
@@ -45,12 +50,12 @@ export const getPolywrapClient = async () => {
   const connection = new Connection({
     provider: provider,
   });
-  const safeOwner = provider.getSigner(0)
-  
+  const safeOwner = provider.getSigner(0);
+
   const ethAdapter = new EthersAdapter({
     ethers,
-    signerOrProvider: safeOwner
-  })
+    signerOrProvider: safeOwner,
+  });
 
   const builder = getBasePolywrapClientConfigBuilder();
 
@@ -72,7 +77,7 @@ export const getPolywrapClient = async () => {
       txServiceUrl: "'https://safe-transaction-mainnet.safe.global",
       ethAdapter: ethAdapter,
     })
-  )
+  );
 
   return new PolywrapClient(builder.build());
 };
