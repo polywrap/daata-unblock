@@ -1,18 +1,19 @@
 import {
-  PolywrapClient,
-  PolywrapClientConfigBuilder,
-} from "@polywrap/client-js";
-import { ethers } from "ethers";
-import {
   Connection,
   Connections,
   ethereumWalletPlugin,
 } from "@polywrap/ethereum-wallet-js";
-import { makeAddressBookPlugin } from "./plugins/AddressBook";
-import { getMagic } from "../magic";
-import { useProviderStore } from "@/stores/providerStore";
-import { safeApiPlugin } from "@polywrap/safe-api-plugin";
+import {
+  PolywrapClient,
+  PolywrapClientConfigBuilder,
+} from "@polywrap/client-js";
+
 import { EthersAdapter } from '@safe-global/protocol-kit'
+import { ethers } from "ethers";
+import { getMagic } from "../magic";
+import { makeAddressBookPlugin } from "./plugins/AddressBook";
+import { safeApiPlugin } from "@polywrap/safe-api-plugin";
+import { useProviderStore } from "@/stores/providerStore";
 
 const getBasePolywrapClientConfigBuilder = () => {
   const builder = new PolywrapClientConfigBuilder();
@@ -65,14 +66,17 @@ export const getPolywrapClient = async () => {
       }),
     })
   );
+  
   builder.setPackage(
-    "plugin/safe-api-kit",
+    "plugin/safe-api-kit@1.0",
     safeApiPlugin({
       signer: safeOwner,
-      txServiceUrl: "'https://safe-transaction-mainnet.safe.global",
+      txServiceUrl: "https://safe-transaction-mainnet.safe.global",
       ethAdapter: ethAdapter,
     })
   )
+
+  console.log(builder);
 
   return new PolywrapClient(builder.build());
 };
