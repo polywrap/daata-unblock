@@ -1,8 +1,9 @@
-import { Invocation } from "@/lib/models/invocation";
 import {
   getPolywrapClient,
   getReadonlyPolywrapClient,
 } from "@/lib/polywrap/client";
+
+import { Invocation } from "@/lib/models/invocation";
 import { useMutation } from "@tanstack/react-query";
 
 const useInvoke = () => {
@@ -11,9 +12,7 @@ const useInvoke = () => {
       invocation: Invocation;
       requiresSignature: boolean;
     }) => {
-      const polywrapClient = args.requiresSignature
-        ? await getPolywrapClient()
-        : getReadonlyPolywrapClient();
+      const polywrapClient = await getPolywrapClient()
 
       const result = await polywrapClient.invoke({
         uri: args.invocation.uri,
