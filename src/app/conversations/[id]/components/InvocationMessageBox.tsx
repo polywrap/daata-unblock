@@ -18,9 +18,9 @@ const InvocationMessageBox = ({
     useSendInvocationResult(conversationId);
   const { mutate: invoke, isLoading, error, data } = useInvoke();
 
-  const [isWalletConnected, setIsWalletConnected] = useState(
-    !!useProviderStore.getState().provider
-  );
+  const { provider } = useProviderStore();
+
+  const isWalletConnected = !!provider;
 
   const [isWalletConnecting, setIsWalletConnecting] = useState(false);
 
@@ -67,7 +67,6 @@ const InvocationMessageBox = ({
       try {
         const resultingProvider = await login();
         useProviderStore.setState({ provider: resultingProvider });
-        setIsWalletConnected(!!useProviderStore.getState().provider);
       } catch (e) {
         console.error(e);
       }
@@ -88,7 +87,7 @@ const InvocationMessageBox = ({
           onClick={() => {
             onInvoke();
           }}
-          className="rounded-lg bg-primary-500 w-full px-4 py-3 text-white font-bold"
+          className="rounded-lg bg-primary-500 w-full px-4 py-3 text-white font-bold disabled:bg-primary-300 disabled:animate-pulse"
         >
           Execute
         </button>
@@ -98,7 +97,7 @@ const InvocationMessageBox = ({
           onClick={() => {
             onConnectWallet();
           }}
-          className="rounded-lg bg-primary-500 w-full px-4 py-3 text-white font-bold disabled:bg-primary-300"
+          className="rounded-lg bg-primary-500 w-full px-4 py-3 text-white font-bold disabled:bg-primary-300 disabled:animate-pulse"
         >
           Connect wallet
         </button>
