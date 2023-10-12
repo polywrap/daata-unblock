@@ -78,7 +78,10 @@ const InvocationMessageBox = ({
 
   return (
     <li className="px-6 py-4 rounded-lg border-2 bg-white border-primary-300 flex flex-col gap-4">
-      <h2 className="font-bold">Actions</h2>
+      <h2 className="font-bold">Action</h2>
+      <div className="text-sm text-gray-500">
+        {message.description}
+      </div>
       <div className="flex flex-col gap-2">
         <ActionBox invocation={invocation} />
       </div>
