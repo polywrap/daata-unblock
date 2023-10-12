@@ -33,6 +33,11 @@ const getBasePolywrapClientConfigBuilder = () => {
     "wrap://wrapscan.io/polywrap/ens-plugin@1.0",
     makeEnsPlugin()
   );
+  builder.addEnv("wrapscan.io/polywrap/covalent@1.0", {
+    apiKey: "cqt_rQdPCkVXWP9vGMRFY9rgb6vCDfGv",
+    vsCurrency: "usd",
+    format: 0
+  });
 
   return builder;
 };
