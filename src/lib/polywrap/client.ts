@@ -42,51 +42,43 @@ const getBasePolywrapClientConfigBuilder = () => {
   return builder;
 };
 
-export const getPolywrapClient = async () => {
-  const { login } = getMagic();
-
-  if (!useProviderStore.getState().provider) {
-    const resultingProvider = await login();
-    useProviderStore.setState({ provider: resultingProvider });
-  }
-
-  const provider = useProviderStore.getState()
-    .provider as ethers.providers.Web3Provider;
-
-  const connection = new Connection({
-    provider: provider,
-  });
-  const safeOwner = provider.getSigner(0);
-
-  const ethAdapter = new EthersAdapter({
-    ethers,
-    signerOrProvider: safeOwner,
-  });
+export const getPolywrapClient = async (provider: ethers.providers.Web3Provider | null) => {
 
   const builder = getBasePolywrapClientConfigBuilder();
 
-  builder.setPackage(
-    "wrapscan.io/polywrap/ethereum-wallet@1.0",
-    ethereumWalletPlugin({
-      connections: new Connections({
-        networks: {
-          ethereum: connection,
-        },
-        defaultNetwork: "ethereum",
-      }),
-    })
-  );
-
-  builder.setPackage(
-    "plugin/safe-api-kit@1.0",
-    safeApiPlugin({
-      signer: safeOwner,
-      txServiceUrl: "https://safe-transaction-mainnet.safe.global",
-      ethAdapter: ethAdapter,
-    })
-  );
-
-  console.log(builder);
+  if(provider){
+    const connection = new Connection({
+      provider: provider,
+    });
+    const safeOwner = provider.getSigner(0);
+  
+    const ethAdapter = new EthersAdapter({
+      ethers,
+      signerOrProvider: safeOwner,
+    });
+  
+  
+    builder.setPackage(
+      "wrapscan.io/polywrap/ethereum-wallet@1.0",
+      ethereumWalletPlugin({
+        connections: new Connections({
+          networks: {
+            ethereum: connection,
+          },
+          defaultNetwork: "ethereum",
+        }),
+      })
+    );
+  
+    builder.setPackage(
+      "plugin/safe-api-kit@1.0",
+      safeApiPlugin({
+        signer: safeOwner,
+        txServiceUrl: "https://safe-transaction-mainnet.safe.global",
+        ethAdapter: ethAdapter,
+      })
+    ); 
+  }
 
   return new PolywrapClient(builder.build());
 };

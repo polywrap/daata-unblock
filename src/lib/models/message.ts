@@ -25,8 +25,8 @@ export interface InvocationMessage extends Message {
   args: any;
   functionName: string;
   isReadonly: boolean;
-  requiresSignature: boolean;
-  readableDescription: string;
+  requiresSign: boolean;
+  description: string;
 }
 
 export interface InvocationResultMessage extends Message {
