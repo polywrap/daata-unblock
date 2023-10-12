@@ -1,8 +1,12 @@
-import { InvocationMessage } from "@/lib/models/message";
 import ActionBox from "./ActionBox";
-import useInvoke from "@/mutations/useInvoke";
-import useSendInvocationResult from "@/mutations/useSendInvocationResult";
+import { InvocationMessage } from "@/lib/models/message";
 import InvocationResult from "@/app/components/InvocationResult";
+import clsx from "clsx";
+import { getMagic } from "@/lib/magic";
+import useInvoke from "@/mutations/useInvoke";
+import { useProviderStore } from "@/stores/providerStore";
+import useSendInvocationResult from "@/mutations/useSendInvocationResult";
+import { useState } from "react";
 
 const InvocationMessageBox = ({
   message,
@@ -15,17 +19,23 @@ const InvocationMessageBox = ({
     useSendInvocationResult(conversationId);
   const { mutate: invoke, isLoading, error, data } = useInvoke();
 
+  const { provider } = useProviderStore();
+
+  const isWalletConnected = !!provider;
+
+  const [isWalletConnecting, setIsWalletConnecting] = useState(false);
+
   const invocation = {
     uri: message.uri,
     method: message.method,
     args: message.args,
   };
 
-  const onClick = () => {
+  const onInvoke = () => {
     invoke(
       {
         invocation,
-        requiresSignature: message.requiresSignature,
+        requiresSignature: message.requiresSign,
       },
       {
         onSuccess: (data) => {
@@ -49,21 +59,53 @@ const InvocationMessageBox = ({
     );
   };
 
+  const onConnectWallet = async () => {
+    const { login } = getMagic();
+
+    if (!useProviderStore.getState().provider) {
+      setIsWalletConnecting(true);
+
+      try {
+        const resultingProvider = await login();
+        useProviderStore.setState({ provider: resultingProvider });
+      } catch (e) {
+        console.error(e);
+      }
+
+      setIsWalletConnecting(false);
+    }
+  };
+
   return (
     <li className="px-6 py-4 rounded-lg border-2 bg-white border-primary-300 flex flex-col gap-4">
-      <h2 className="font-bold">Actions</h2>
+      <h2 className="font-bold">Action</h2>
+      <div className="text-sm text-gray-500">
+        {message.description}
+      </div>
       <div className="flex flex-col gap-2">
         <ActionBox invocation={invocation} />
       </div>
-      <button
-        disabled={!!data}
-        onClick={() => {
-          onClick();
-        }}
-        className="rounded-lg bg-primary-500 w-full px-4 py-3 text-white font-bold"
-      >
-        Execute
-      </button>
+      {!isWalletConnected && message.requiresSign ? (
+        <button
+          disabled={isWalletConnecting}
+          onClick={() => {
+            onConnectWallet();
+          }}
+          className="rounded-lg bg-primary-500 w-full px-4 py-3 text-white font-bold disabled:bg-primary-300 disabled:animate-pulse"
+        >
+          Connect wallet
+        </button>
+      ) : (
+        <button
+          disabled={!!data || isLoading}
+          onClick={() => {
+            onInvoke();
+          }}
+          className={clsx("rounded-lg bg-primary-500 w-full px-4 py-3 text-white font-bold disabled:bg-primary-300", {"animate-pulse": isLoading})}
+        >
+          Execute
+        </button>
+      )}
       {isLoading ? (
         <div>
           <InvocationResult type={"loading"} text={"Invoking actions"} />

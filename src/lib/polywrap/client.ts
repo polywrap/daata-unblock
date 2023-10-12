@@ -26,67 +26,65 @@ const getBasePolywrapClientConfigBuilder = () => {
     "wrap://wrapscan.io/polywrap/addressBook@1.0",
     "wrap://wrapscan.io/polywrap/addressBook@1.1.1"
   );
+
   builder.setPackage(
     "wrap://wrapscan.io/polywrap/addressBook@1.1.1",
     makeAddressBookPlugin()
   );
+
   builder.setPackage(
     "wrap://wrapscan.io/polywrap/ens-plugin@1.0",
     makeEnsPlugin()
   );
-  builder.setPackage(
-    "plugin/safe-tx-plugin@1.0",
-    makeSafeTxPlugin()
-  )
+
+  builder.setPackage("plugin/safe-tx-plugin@1.0", makeSafeTxPlugin());
+
+  builder.addEnv("wrapscan.io/polywrap/covalent@1.0", {
+    apiKey: "cqt_rQdPCkVXWP9vGMRFY9rgb6vCDfGv",
+    vsCurrency: "usd",
+    format: 0,
+  });
 
   return builder;
 };
 
-export const getPolywrapClient = async () => {
-  const { login } = getMagic();
-
-  if (!useProviderStore.getState().provider) {
-    const resultingProvider = await login();
-    useProviderStore.setState({ provider: resultingProvider });
-  }
-
-  const provider = useProviderStore.getState()
-    .provider as ethers.providers.Web3Provider;
-
-  const connection = new Connection({
-    provider: provider,
-  });
-  const safeOwner = provider.getSigner(0);
-
-  const ethAdapter = new EthersAdapter({
-    ethers,
-    signerOrProvider: safeOwner,
-  });
-
+export const getPolywrapClient = async (
+  provider: ethers.providers.Web3Provider | null
+) => {
   const builder = getBasePolywrapClientConfigBuilder();
 
-  builder.setPackage(
-    "wrapscan.io/polywrap/ethereum-wallet@1.0",
-    ethereumWalletPlugin({
-      connections: new Connections({
-        networks: {
-          ethereum: connection,
-        },
-        defaultNetwork: "ethereum",
-      }),
-    })
-  );
+  if (provider) {
+    const connection = new Connection({
+      provider: provider,
+    });
+    const safeOwner = provider.getSigner(0);
 
-  builder.setPackage(
-    "plugin/safe-api-kit@1.0",
-    safeApiPlugin({
-      signer: safeOwner,
-      txServiceUrl: "https://safe-transaction-mainnet.safe.global",
-      ethAdapter: ethAdapter,
-    })
-  );
+    const ethAdapter = new EthersAdapter({
+      ethers,
+      signerOrProvider: safeOwner,
+    });
 
-  console.log(builder);
+    builder.setPackage(
+      "wrapscan.io/polywrap/ethereum-wallet@1.0",
+      ethereumWalletPlugin({
+        connections: new Connections({
+          networks: {
+            ethereum: connection,
+          },
+          defaultNetwork: "ethereum",
+        }),
+      })
+    );
+
+    builder.setPackage(
+      "plugin/safe-api-kit@1.0",
+      safeApiPlugin({
+        signer: safeOwner,
+        txServiceUrl: "https://safe-transaction-mainnet.safe.global",
+        ethAdapter: ethAdapter,
+      })
+    );
+  }
 
   return new PolywrapClient(builder.build());
 };
