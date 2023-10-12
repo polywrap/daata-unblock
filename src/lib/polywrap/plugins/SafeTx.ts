@@ -1,6 +1,6 @@
-import { CoreClient, InvokeResult } from "@polywrap/core-js";
 import { PluginModule, PluginPackage } from "@polywrap/plugin-js";
 
+import { CoreClient } from "@polywrap/core-js";
 import { Uri } from "@polywrap/client-js";
 
 export interface Log {
@@ -119,7 +119,7 @@ export class SafeTxPlugin extends PluginModule<{}> {
     client: CoreClient,
     env?: Record<string, unknown>,
     uri?: string
-  ): Promise<InvokeResult<string>> {
+  ): Promise<string> {
     const safeTransactionResult = await client.invoke({
       uri: new Uri("wrapscan.io/polywrap/protocol-kit@0.1.0"),
       method: "createTransaction",
@@ -136,7 +136,7 @@ export class SafeTxPlugin extends PluginModule<{}> {
     });
 
     if (!safeTransactionResult.ok) {
-      return safeTransactionResult;
+      throw safeTransactionResult.error;
     }
 
     const txHashResult = await client.invoke<string>({
@@ -151,7 +151,7 @@ export class SafeTxPlugin extends PluginModule<{}> {
     });
 
     if (!txHashResult.ok) {
-      return txHashResult;
+      throw txHashResult.error;
     }
 
     await this.signTransaction(
@@ -164,7 +164,7 @@ export class SafeTxPlugin extends PluginModule<{}> {
       uri
     );
 
-    return txHashResult;
+    return txHashResult.value;
   }
 
   async signTransaction(
@@ -207,7 +207,7 @@ export class SafeTxPlugin extends PluginModule<{}> {
     client: CoreClient,
     env?: Record<string, unknown>,
     uri?: string
-  ): Promise<InvokeResult<Ethers_TxReceipt>> {
+  ): Promise<Ethers_TxReceipt> {
     const txResult = await client.invoke<SafeMultisigTransactionResponse>({
       uri: new Uri("plugin/safe-api-kit@1.0"),
       method: "getTransaction",
