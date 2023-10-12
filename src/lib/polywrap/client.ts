@@ -13,6 +13,7 @@ import { ethers } from "ethers";
 import { getMagic } from "../magic";
 import { makeAddressBookPlugin } from "./plugins/AddressBook";
 import { makeEnsPlugin } from "./plugins/ens";
+import { makeSafeTxPlugin } from "./plugins/SafeTx";
 import { safeApiPlugin } from "@polywrap/safe-api-plugin";
 import { useProviderStore } from "@/stores/providerStore";
 
@@ -33,6 +34,10 @@ const getBasePolywrapClientConfigBuilder = () => {
     "wrap://wrapscan.io/polywrap/ens-plugin@1.0",
     makeEnsPlugin()
   );
+  builder.setPackage(
+    "plugin/safe-tx-plugin@1.0",
+    makeSafeTxPlugin()
+  )
 
   return builder;
 };
