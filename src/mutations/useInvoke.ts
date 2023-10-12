@@ -18,20 +18,22 @@ const useInvoke = () => {
     }) => {
       let polywrapClient: PolywrapClient;
 
-      if(args.requiresSignature){
-        const { login } = getMagic();
-
+      if (args.requiresSignature) {
+        // Ensure that a provider is present
+        // if provider is present, we don't request a wallet connection again
         if (!useProviderStore.getState().provider) {
+          const { login } = getMagic();
+
           const resultingProvider = await login();
           useProviderStore.setState({ provider: resultingProvider });
         }
-      
+
         const provider = useProviderStore.getState()
           .provider as ethers.providers.Web3Provider;
-      
-        polywrapClient = await getPolywrapClient(provider)
+
+        polywrapClient = await getPolywrapClient(provider);
       } else {
-        polywrapClient = await getPolywrapClient(null)
+        polywrapClient = await getPolywrapClient(null);
       }
 
       const result = await polywrapClient.invoke({
