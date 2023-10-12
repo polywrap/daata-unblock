@@ -59,6 +59,37 @@ export const getPolywrapClient = async (
     });
     const safeOwner = provider.getSigner(0);
 
+    let safeTxServiceUrl = "https://safe-transaction-mainnet.safe.global";
+    switch (provider.network.chainId) {
+      case 1:
+        safeTxServiceUrl = "https://safe-transaction-mainnet.safe.global";
+        break;
+      case 56:
+        safeTxServiceUrl = "https://safe-transaction-bsc.safe.global";
+        break;
+      case 137:
+        safeTxServiceUrl = "https://safe-transaction-polygon.safe.global";
+        break;
+      case 42161:
+        safeTxServiceUrl = "https://safe-transaction-arbitrum.safe.global";
+        break;
+      case 10:
+        safeTxServiceUrl = "https://safe-transaction-optimism.safe.global";
+        break;
+      case 43114:
+        safeTxServiceUrl = "https://safe-transaction-avalanche.safe.global";
+        break;
+      case 8453:
+        safeTxServiceUrl = "https://safe-transaction-base.safe.global";
+        break;
+      case 100:
+        safeTxServiceUrl = "https://safe-transaction-gnosis-chain.safe.global";
+        break;
+      default:
+        safeTxServiceUrl = "https://safe-transaction-mainnet.safe.global";
+        break;
+    }
+
     const ethAdapter = new EthersAdapter({
       ethers,
       signerOrProvider: safeOwner,
@@ -80,7 +111,7 @@ export const getPolywrapClient = async (
       "plugin/safe-api-kit@1.0",
       safeApiPlugin({
         signer: safeOwner,
-        txServiceUrl: "https://safe-transaction-mainnet.safe.global",
+        txServiceUrl: safeTxServiceUrl,
         ethAdapter: ethAdapter,
       })
     );
