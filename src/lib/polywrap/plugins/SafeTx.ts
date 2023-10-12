@@ -119,7 +119,7 @@ export class SafeTxPlugin extends PluginModule<{}> {
     client: CoreClient,
     env?: Record<string, unknown>,
     uri?: string
-  ): Promise<string> {
+  ) {
     const safeTransactionResult = await client.invoke({
       uri: new Uri("wrapscan.io/polywrap/protocol-kit@0.1.0"),
       method: "createTransaction",
@@ -164,7 +164,9 @@ export class SafeTxPlugin extends PluginModule<{}> {
       uri
     );
 
-    return txHashResult.value;
+    return {
+      safeTxHash: txHashResult.value
+    };
   }
 
   async signTransaction(
@@ -185,7 +187,7 @@ export class SafeTxPlugin extends PluginModule<{}> {
     });
 
     if (!signatureResult.ok) {
-      return signatureResult;
+      throw signatureResult.error;
     }
 
     const signature = signatureResult.value;
@@ -199,7 +201,13 @@ export class SafeTxPlugin extends PluginModule<{}> {
       },
     });
 
-    return confirmedSignatureResult;
+    if (!confirmedSignatureResult.ok) {
+      throw confirmedSignatureResult.error;
+    }
+
+    return {
+      signature: confirmedSignatureResult.value
+    };
   }
 
   async executeTransaction(
@@ -207,7 +215,7 @@ export class SafeTxPlugin extends PluginModule<{}> {
     client: CoreClient,
     env?: Record<string, unknown>,
     uri?: string
-  ): Promise<Ethers_TxReceipt> {
+  ): Promise<any> {
     const txResult = await client.invoke<SafeMultisigTransactionResponse>({
       uri: new Uri("plugin/safe-api-kit@1.0"),
       method: "getTransaction",
@@ -245,27 +253,25 @@ export class SafeTxPlugin extends PluginModule<{}> {
       nonce: tx.nonce,
     };
 
-    const executeTxResult =
-      await client.invoke<SafeMultisigConfirmationResponse>({
-        uri: new Uri("wrapscan.io/polywrap/protocol-kit@0.1.0"),
-        method: "executeTransaction",
-        args: {
-          tx: {
-            signatures,
-            data: txData,
-          },
+    const executeTxResult = await client.invoke<any>({
+      uri: new Uri("wrapscan.io/polywrap/protocol-kit@0.1.0"),
+      method: "executeTransaction",
+      args: {
+        tx: {
+          signatures,
+          data: txData,
         },
-        env: {
-          safeAddress: args.safeAddress,
-        },
-      });
+      },
+      env: {
+        safeAddress: args.safeAddress,
+      },
+    });
 
-      if(!executeTxResult.ok){
-        throw executeTxResult.error;
-      }
+    if (!executeTxResult.ok) {
+      throw executeTxResult.error;
+    }
 
-      // TODO: Return an Ethers_TxReceipt for the transaction here
-      throw "Not implemented."
+    return executeTxResult.value;
   }
 
   async addOwner(
