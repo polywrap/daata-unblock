@@ -15,7 +15,6 @@ export interface Log {
   logIndex: number;
 }
 
-
 export interface Ethers_TxReceipt {
   to: string;
   from: string;
@@ -35,7 +34,6 @@ export interface Ethers_TxReceipt {
   status?: number | null;
 }
 
-
 export type ArgsCreateTransaction = {
   safeAddress: string;
   to: string;
@@ -49,6 +47,25 @@ export type ArgsSignTransaction = {
 };
 
 export type ArgsExecuteTransaction = ArgsSignTransaction;
+
+export type ArgsAddOwnerTx = {
+  safeAddress: string;
+  ownerAddress: string;
+  newThreshold: number;
+};
+
+export type ArgsRemoveOwnerTx = ArgsAddOwnerTx;
+
+export type ArgsChangeThresholdTx = {
+  safeAddress: string;
+  newThreshold: number;
+};
+
+export type ArgsEnableModule = {
+  safeAddress: string;
+  moduleAddress: string;
+}
+export type ArgsDisableModule = ArgsEnableModule;
 
 export type Signature = {
   signer: string;
@@ -228,34 +245,153 @@ export class SafeTxPlugin extends PluginModule<{}> {
       gasPrice: tx.gasPrice,
       gasToken: tx.gasToken,
       refundReceiver: tx.refundReceiver,
-      nonce: tx.nonce
-    }
+      nonce: tx.nonce,
+    };
 
-    const executeTxResult = await client.invoke<SafeMultisigConfirmationResponse>({
-      uri: "wrapscan.io/polywrap/protocol-kit@0.1.0",
-      method: "executeTransaction",
-      args: {
-        tx: {
-          signatures,
-          data: txData,
+    const executeTxResult =
+      await client.invoke<SafeMultisigConfirmationResponse>({
+        uri: "wrapscan.io/polywrap/protocol-kit@0.1.0",
+        method: "executeTransaction",
+        args: {
+          tx: {
+            signatures,
+            data: txData,
+          },
+        },
+        env: {
+          safeAddress: args.safeAddress,
         }
-      }
-    });
+      });
 
     return executeTxResult;
   }
 
-  // async addOwner(args: { ownerAddress: string; newThreshold: number }) {
-  //   return "safeTxHash";
-  // }
+  async addOwner(args: ArgsAddOwnerTx, client: CoreClient, env?: Record<string, unknown>, uri?: string) {
+    const encodeAddOwnerWithThresholdDataResult =
+      await client.invoke<string>({
+        uri: "wrapscan.io/polywrap/protocol-kit@0.1.0",
+        method: "encodeAddOwnerWithThresholdData",
+        args: {
+          ownerAddress: args.ownerAddress,
+          threshold: args.newThreshold,
+        },
+        env: {
+          safeAddress: args.safeAddress,
+        }
+      });
 
-  // async removeOwner(args: { ownerAddress: string; newThreshold: number }) {
-  //   return "safeTxHash";
-  // }
+    if (!encodeAddOwnerWithThresholdDataResult.ok) {
+      return encodeAddOwnerWithThresholdDataResult;
+    }
 
-  // async changeThreshold(args: { newThreshold: number }) {
-  //   return "safeTxHash";
-  // }
+    return await this.createTransaction({
+      safeAddress: args.safeAddress,
+      to: args.safeAddress,
+      data: encodeAddOwnerWithThresholdDataResult.value,
+      value: "0",
+    }, client, env, uri);
+  }
+
+  async removeOwner(args: ArgsRemoveOwnerTx, client: CoreClient, env?: Record<string, unknown>, uri?: string) {
+    const encodeRemoveOwnerDataResult =
+      await client.invoke<string>({
+        uri: "wrapscan.io/polywrap/protocol-kit@0.1.0",
+        method: "encodeRemoveOwnerData",
+        args: {
+          ownerAddress: args.ownerAddress,
+          threshold: args.newThreshold,
+        },
+        env: {
+          safeAddress: args.safeAddress,
+        }
+      });
+
+    if (!encodeRemoveOwnerDataResult.ok) {
+      return encodeRemoveOwnerDataResult;
+    }
+
+    return await this.createTransaction({
+      safeAddress: args.safeAddress,
+      to: args.safeAddress,
+      data: encodeRemoveOwnerDataResult.value,
+      value: "0",
+    }, client, env, uri);
+  }
+
+  async changeThreshold(args: ArgsChangeThresholdTx, client: CoreClient, env?: Record<string, unknown>, uri?: string) {
+    const encodeChangeThresholdDataResult =
+      await client.invoke<string>({
+        uri: "wrapscan.io/polywrap/protocol-kit@0.1.0",
+        method: "encodeChangeThresholdData",
+        args: {
+          threshold: args.newThreshold,
+        },
+        env: {
+          safeAddress: args.safeAddress,
+        }
+      });
+
+    if (!encodeChangeThresholdDataResult.ok) {
+      return encodeChangeThresholdDataResult;
+    }
+
+    return await this.createTransaction({
+      safeAddress: args.safeAddress,
+      to: args.safeAddress,
+      data: encodeChangeThresholdDataResult.value,
+      value: "0",
+    }, client, env, uri);
+  }
+
+  async enableModule(args: ArgsEnableModule, client: CoreClient, env?: Record<string, unknown>, uri?: string) {
+    const encodeEnableModuleDataResult =
+      await client.invoke<string>({
+        uri: "wrapscan.io/polywrap/protocol-kit@0.1.0",
+        method: "encodeEnableModuleData",
+        args: {
+          moduleAddress: args.moduleAddress,
+        },
+        env: {
+          safeAddress: args.safeAddress,
+        }
+      });
+
+    if (!encodeEnableModuleDataResult.ok) {
+      return encodeEnableModuleDataResult;
+    }
+
+    return await this.createTransaction({
+      safeAddress: args.safeAddress,
+      to: args.safeAddress,
+      data: encodeEnableModuleDataResult.value,
+      value: "0",
+    }, client, env, uri);
+  }
+
+  async disableModule(args: ArgsDisableModule, client: CoreClient, env?: Record<string, unknown>, uri?: string) {
+    const encodeDisableModuleDataResult =
+      await client.invoke<string>({
+        uri: "wrapscan.io/polywrap/protocol-kit@0.1.0",
+        method: "encodeDisableModuleData",
+        args: {
+          moduleAddress: args.moduleAddress,
+        },
+        env: {
+          safeAddress: args.safeAddress,
+        }
+      });
+
+    if (!encodeDisableModuleDataResult.ok) {
+      return encodeDisableModuleDataResult;
+    }
+
+    return await this.createTransaction({
+      safeAddress: args.safeAddress,
+      to: args.safeAddress,
+      data: encodeDisableModuleDataResult.value,
+      value: "0",
+    }, client, env, uri);
+  }
 }
 
 export const makeSafeTxPlugin = () => {
