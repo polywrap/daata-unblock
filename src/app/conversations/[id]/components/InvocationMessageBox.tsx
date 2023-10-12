@@ -1,6 +1,7 @@
 import ActionBox from "./ActionBox";
 import { InvocationMessage } from "@/lib/models/message";
 import InvocationResult from "@/app/components/InvocationResult";
+import clsx from "clsx";
 import { getMagic } from "@/lib/magic";
 import useInvoke from "@/mutations/useInvoke";
 import { useProviderStore } from "@/stores/providerStore";
@@ -34,7 +35,7 @@ const InvocationMessageBox = ({
     invoke(
       {
         invocation,
-        requiresSignature: message.requiresSignature,
+        requiresSignature: message.requiresSign,
       },
       {
         onSuccess: (data) => {
@@ -81,17 +82,7 @@ const InvocationMessageBox = ({
       <div className="flex flex-col gap-2">
         <ActionBox invocation={invocation} />
       </div>
-      {isWalletConnected ? (
-        <button
-          disabled={!!data}
-          onClick={() => {
-            onInvoke();
-          }}
-          className="rounded-lg bg-primary-500 w-full px-4 py-3 text-white font-bold disabled:bg-primary-300 disabled:animate-pulse"
-        >
-          Execute
-        </button>
-      ) : (
+      {!isWalletConnected && message.requiresSign ? (
         <button
           disabled={isWalletConnecting}
           onClick={() => {
@@ -100,6 +91,16 @@ const InvocationMessageBox = ({
           className="rounded-lg bg-primary-500 w-full px-4 py-3 text-white font-bold disabled:bg-primary-300 disabled:animate-pulse"
         >
           Connect wallet
+        </button>
+      ) : (
+        <button
+          disabled={!!data || isLoading}
+          onClick={() => {
+            onInvoke();
+          }}
+          className={clsx("rounded-lg bg-primary-500 w-full px-4 py-3 text-white font-bold disabled:bg-primary-300", {"animate-pulse": isLoading})}
+        >
+          Execute
         </button>
       )}
       {isLoading ? (

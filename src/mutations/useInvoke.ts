@@ -4,7 +4,11 @@ import {
 } from "@/lib/polywrap/client";
 
 import { Invocation } from "@/lib/models/invocation";
+import { PolywrapClient } from "@polywrap/client-js";
+import { ethers } from "ethers";
+import { getMagic } from "@/lib/magic";
 import { useMutation } from "@tanstack/react-query";
+import { useProviderStore } from "@/stores/providerStore";
 
 const useInvoke = () => {
   return useMutation({
@@ -12,7 +16,23 @@ const useInvoke = () => {
       invocation: Invocation;
       requiresSignature: boolean;
     }) => {
-      const polywrapClient = await getPolywrapClient()
+      let polywrapClient: PolywrapClient;
+
+      if(args.requiresSignature){
+        const { login } = getMagic();
+
+        if (!useProviderStore.getState().provider) {
+          const resultingProvider = await login();
+          useProviderStore.setState({ provider: resultingProvider });
+        }
+      
+        const provider = useProviderStore.getState()
+          .provider as ethers.providers.Web3Provider;
+      
+        polywrapClient = await getPolywrapClient(provider)
+      } else {
+        polywrapClient = await getPolywrapClient(null)
+      }
 
       const result = await polywrapClient.invoke({
         uri: args.invocation.uri,
