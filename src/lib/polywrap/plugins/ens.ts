@@ -1,6 +1,6 @@
 import { PluginModule, PluginPackage } from "@polywrap/plugin-js";
 
-import http from "@/lib/http";
+import axios from "axios";
 
 const GRAPH_API_URL = "https://api.thegraph.com/subgraphs/name/ensdomains/ens";
 
@@ -44,6 +44,8 @@ export class EnsPlugin extends PluginModule<{}> {
   `;
 
     try {
+      const http = axios.create();
+
       const response = await http.post(GRAPH_API_URL, {
         query,
       });
