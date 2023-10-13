@@ -88,6 +88,14 @@ export const getPolywrapClient = async (
       case 100:
         safeTxServiceUrl = "https://safe-transaction-gnosis-chain.safe.global";
         break;
+
+      // testnets
+      case 5:
+        safeTxServiceUrl = "https://safe-transaction-goerli.safe.global";
+        break;
+      case 1442:
+        safeTxServiceUrl = "https://safe-transaction-zkevm.safe.global";
+        break;
       default:
         safeTxServiceUrl = "https://safe-transaction-mainnet.safe.global";
         break;

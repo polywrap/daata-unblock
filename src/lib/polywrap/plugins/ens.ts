@@ -20,7 +20,6 @@ export interface DomainInfo {
   };
 }
 
-
 export class EnsPlugin extends PluginModule<{}> {
   async getDomainInfo(args: { domain: string }) {
     const query = `
