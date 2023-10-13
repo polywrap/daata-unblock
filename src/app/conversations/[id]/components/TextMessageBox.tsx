@@ -16,7 +16,7 @@ const TextMessageBox = ({ message }: { message: TextMessage }) => {
       ) : (
         <PolywrapAvatar />
       )}
-      <p className="text-sm">{message.text}</p>
+      <pre className="text-sm whitespace-pre-wrap font-[hdcolton]">{message.text}</pre>
     </li>
   );
 };
