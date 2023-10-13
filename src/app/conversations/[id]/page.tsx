@@ -61,7 +61,9 @@ const Conversation = () => {
             ref={listRef}
           >
             {conversation?.agentChatId && (
-              <li className="text-xs text-gray-500">Agent chat ID: {conversation.agentChatId}</li>
+              <li className="text-xs text-gray-500">
+                Agent chat ID: {conversation.agentChatId}
+              </li>
             )}
             {conversation?.messages.map((message, i) => {
               switch (message.kind) {
