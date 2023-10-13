@@ -18,6 +18,7 @@ const InvocationMessageBox = ({
   const { mutate: sendInvocationResult } =
     useSendInvocationResult(conversationId);
   const { mutate: invoke, isLoading, error, data } = useInvoke();
+  const [invocationData, setInvocationData] = useState<any>(undefined);
 
   const { provider } = useProviderStore();
 
@@ -40,6 +41,7 @@ const InvocationMessageBox = ({
       {
         onSuccess: (data) => {
           console.log(data);
+          setInvocationData(data);
           sendInvocationResult({
             functionName: message.functionName,
             result: JSON.stringify({ result: data, error: null }),
@@ -47,6 +49,7 @@ const InvocationMessageBox = ({
         },
         onError: (error) => {
           console.log(error);
+          setInvocationData(error);
           sendInvocationResult({
             functionName: message.functionName,
             result: JSON.stringify({
@@ -116,12 +119,13 @@ const InvocationMessageBox = ({
           <InvocationResult
             type={"success"}
             text={`Actions executed successfully`}
+            data={invocationData}
           />
         </div>
       ) : null}
       {error ? (
         <div>
-          <InvocationResult type={"error"} text={`Error executing actions`} />
+          <InvocationResult type={"error"} text={`Error executing actions`} data={invocationData} />
         </div>
       ) : null}
     </li>
