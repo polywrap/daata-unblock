@@ -45,6 +45,9 @@ const getBasePolywrapClientConfigBuilder = () => {
     format: 0,
   });
 
+  // HACK to support proper version of protocol kit
+  builder.setRedirect("wrapscan.io/polywrap/protocol-kit@0.1.0", "wrapscan.io/polywrap/protocol-kit@0.0.1");
+
   return builder;
 };
 

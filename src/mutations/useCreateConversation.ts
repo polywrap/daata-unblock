@@ -1,10 +1,11 @@
-import { OPTIMISTIC_CONVERSATION_ID } from "@/constants";
-import http from "@/lib/http";
 import { Conversation, ConversationDTO } from "@/lib/models/conversation";
-import { MessageType } from "@/lib/models/message";
-import { User } from "@/lib/models/user";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+import { MessageType } from "@/lib/models/message";
+import { OPTIMISTIC_CONVERSATION_ID } from "@/constants";
+import { User } from "@/lib/models/user";
 import dayjs from "dayjs";
+import http from "@/lib/http";
 import { useRouter } from "next/navigation";
 
 export default function useCreateConversation() {
@@ -48,7 +49,6 @@ export default function useCreateConversation() {
 
       router.push(`/conversations/${OPTIMISTIC_CONVERSATION_ID}`);
 
-      await new Promise((resolve) => setTimeout(resolve, 5000));
       const { data } = await http.post<ConversationDTO>(`conversations`, {
         prompt,
       });

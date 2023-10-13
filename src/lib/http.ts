@@ -1,6 +1,7 @@
+import axios, { AxiosHeaders } from "axios";
+
 import { API_URL } from "@/constants";
 import { useUserStore } from "@/stores/userStore";
-import axios, { AxiosHeaders } from "axios";
 import { v4 } from "uuid";
 
 const http = axios.create({
