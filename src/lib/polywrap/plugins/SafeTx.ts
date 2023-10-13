@@ -113,7 +113,44 @@ export interface SafeMultisigTransactionResponse {
   signatures?: string | null;
 }
 
+export type ArgsDeploySafe = {
+  owners: string[];
+  threshold: number;
+}
+
 export class SafeTxPlugin extends PluginModule<{}> {
+
+  async deploySafe(
+    args: ArgsDeploySafe,
+    client: CoreClient,
+    env?: Record<string, unknown>,
+    uri?: string
+  ) {
+    const deploySafeResult = await client.invoke<string>({
+      uri: new Uri("wrapscan.io/polywrap/protocol-kit@0.1.0"),
+      method: "deploySafe",
+      args: {
+        input: {
+          safeAccountConfig: {
+            owners: args.owners,
+            threshold: args.threshold
+          }
+        },
+        txOptions: {
+          gasLimit: "12000000"
+        }
+      },
+    });
+
+    if (!deploySafeResult.ok) {
+      throw deploySafeResult.error;
+    }
+
+    return {
+      safeAddress: deploySafeResult.value
+    };
+  }
+
   async createTransaction(
     args: ArgsCreateTransaction,
     client: CoreClient,
@@ -261,6 +298,9 @@ export class SafeTxPlugin extends PluginModule<{}> {
           signatures,
           data: txData,
         },
+        options: {
+          gasLimit: "12000000"
+        }
       },
       env: {
         safeAddress: args.safeAddress,
