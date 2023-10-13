@@ -9,13 +9,13 @@ import SendIcon from "../../public/send.svg";
 import useCreateConversation from "@/mutations/useCreateConversation";
 
 export default function Home() {
-  const { mutate, isLoading } = useCreateConversation();
+  const { mutate: createConversation, isLoading } = useCreateConversation();
   const [inputValue, setinputValue] = useState<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   const onSubmit = () => {
     setinputValue("");
-    mutate({ prompt: inputValue });
+    createConversation({ prompt: inputValue });
   };
 
   const onPressEnter = async (e: React.KeyboardEvent<HTMLInputElement>) => {
