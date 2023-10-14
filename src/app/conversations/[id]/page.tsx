@@ -35,17 +35,22 @@ const Conversation = () => {
   }, [conversation]);
 
   const onSubmit = () => {
-    addMessage(promptValue ?? "");
+    if (promptValue && promptValue.length) {
+      addMessage(promptValue);
+    }
     setPromptValue("");
   };
 
   const isLoading = isLoadingAddMessage || conversationIsOptimisticPlaceholder;
 
+  const lastMessage = conversation?.messages?.length ? conversation.messages[conversation.messages.length - 1] : undefined;
+
   const shouldDisableInput =
     isLoading ||
     !conversation ||
     conversation.completed ||
-    conversationIsOptimisticPlaceholder;
+    conversationIsOptimisticPlaceholder || 
+    (lastMessage?.kind === MessageType.InvocationMessage && lastMessage.method !== "askQuestion");
 
   const onSuggestionSelect = (prompt: string) => {
     setPromptValue(prompt);
