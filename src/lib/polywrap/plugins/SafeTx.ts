@@ -157,6 +157,20 @@ export class SafeTxPlugin extends PluginModule<{}> {
     env?: Record<string, unknown>,
     uri?: string
   ) {
+    const chainIdResult = await client.invoke({
+      uri: new Uri("wrap://wrapscan.io/polywrap/ethers@1.1.1"),
+      method: "getChainId",
+      args: {},
+    })
+    if (!chainIdResult.ok) {
+      throw chainIdResult.error;
+    }
+    const _env = {
+      safeAddress: args.safeAddress,
+      connection: {
+        networkNameOrChainId: chainIdResult.value
+      }
+    }
     const safeTransactionResult = await client.invoke({
       uri: new Uri("wrapscan.io/polywrap/protocol-kit@0.1.0"),
       method: "createTransaction",
@@ -167,9 +181,7 @@ export class SafeTxPlugin extends PluginModule<{}> {
           data: args.data,
         },
       },
-      env: {
-        safeAddress: args.safeAddress,
-      },
+      env: _env
     });
 
     if (!safeTransactionResult.ok) {
@@ -182,9 +194,7 @@ export class SafeTxPlugin extends PluginModule<{}> {
       args: {
         tx: safeTransactionResult.value,
       },
-      env: {
-        safeAddress: args.safeAddress,
-      },
+      env: _env,
     });
 
     if (!txHashResult.ok) {
@@ -212,15 +222,28 @@ export class SafeTxPlugin extends PluginModule<{}> {
     env?: Record<string, unknown>,
     uri?: string
   ) {
+    const chainIdResult = await client.invoke({
+      uri: new Uri("wrap://wrapscan.io/polywrap/ethers@1.1.1"),
+      method: "getChainId",
+      args: {},
+    })
+    if (!chainIdResult.ok) {
+      throw chainIdResult.error;
+    }
+    const _env = {
+      safeAddress: args.safeAddress,
+      connection: {
+        networkNameOrChainId: chainIdResult.value
+      }
+    }
+
     const signatureResult = await client.invoke<Signature>({
       uri: new Uri("wrapscan.io/polywrap/protocol-kit@0.1.0"),
       method: "signTransactionHash",
       args: {
         hash: args.safeTxHash,
       },
-      env: {
-        safeAddress: args.safeAddress,
-      },
+      env: _env,
     });
 
     if (!signatureResult.ok) {
@@ -253,6 +276,21 @@ export class SafeTxPlugin extends PluginModule<{}> {
     env?: Record<string, unknown>,
     uri?: string
   ): Promise<any> {
+    const chainIdResult = await client.invoke({
+      uri: new Uri("wrap://wrapscan.io/polywrap/ethers@1.1.1"),
+      method: "getChainId",
+      args: {},
+    })
+    if (!chainIdResult.ok) {
+      throw chainIdResult.error;
+    }
+    const _env = {
+      safeAddress: args.safeAddress,
+      connection: {
+        networkNameOrChainId: chainIdResult.value
+      }
+    }
+
     const txResult = await client.invoke<SafeMultisigTransactionResponse>({
       uri: new Uri("plugin/safe-api-kit@1.0"),
       method: "getTransaction",
@@ -302,9 +340,7 @@ export class SafeTxPlugin extends PluginModule<{}> {
           gasLimit: "12000000"
         }
       },
-      env: {
-        safeAddress: args.safeAddress,
-      },
+      env: _env,
     });
 
     if (!executeTxResult.ok) {
