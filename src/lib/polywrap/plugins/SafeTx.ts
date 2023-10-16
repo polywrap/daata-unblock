@@ -1,10 +1,14 @@
+import {
+  EthersAdapter,
+  SafeAccountConfig,
+  SafeFactory,
+} from "@safe-global/protocol-kit";
 import { PluginModule, PluginPackage } from "@polywrap/plugin-js";
-import { SafeTransactionDataPartial } from "@safe-global/safe-core-sdk-types";
 
 import { CoreClient } from "@polywrap/core-js";
-import { EthersAdapter, SafeAccountConfig, SafeFactory } from "@safe-global/protocol-kit";
 import Safe from "@safe-global/protocol-kit";
 import SafeAPIKit from "@safe-global/api-kit";
+import { SafeTransactionDataPartial } from "@safe-global/safe-core-sdk-types";
 import { Signer } from "ethers";
 import { Uri } from "@polywrap/client-js";
 import { ethers } from "ethers";
@@ -42,7 +46,6 @@ export type ArgsEnableModule = {
 };
 export type ArgsDisableModule = ArgsEnableModule;
 
-
 export type ArgsDeploySafe = {
   owners: string[];
   threshold: number;
@@ -61,13 +64,15 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
     env?: Record<string, unknown>,
     uri?: string
   ) {
-    const safeFactory = await SafeFactory.create({ ethAdapter: this.config.ethAdapter })
+    const safeFactory = await SafeFactory.create({
+      ethAdapter: this.config.ethAdapter,
+    });
     const safeAccountConfig: SafeAccountConfig = {
       owners: args.owners,
       threshold: args.threshold,
-    }
-    
-    const safeSdk: Safe = await safeFactory.deploySafe({ safeAccountConfig })
+    };
+
+    const safeSdk: Safe = await safeFactory.deploySafe({ safeAccountConfig });
     return await safeSdk.getAddress();
   }
 
@@ -80,8 +85,8 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
     const safeTransactionData: SafeTransactionDataPartial = {
       to: ethers.utils.getAddress(args.to),
       value: args.value,
-      data: args.data
-    }
+      data: args.data,
+    };
 
     const safeSdk: Safe = await Safe.create({
       ethAdapter: this.config.ethAdapter,
@@ -90,14 +95,18 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
     const safeApi = new SafeAPIKit({
       txServiceUrl: this.config.txServiceUrl,
       ethAdapter: this.config.ethAdapter,
-    })
+    });
 
-    const safeTransaction = await safeSdk.createTransaction({ safeTransactionData })
-    const txHash = await safeSdk.getTransactionHash(safeTransaction)
+    const safeTransaction = await safeSdk.createTransaction({
+      safeTransactionData,
+    });
+    const txHash = await safeSdk.getTransactionHash(safeTransaction);
 
-    console.log({txHash, safeTransaction})
+    console.log({ txHash, safeTransaction });
 
-    const signedSafeTransaction = await safeSdk.signTransaction(safeTransaction);
+    const signedSafeTransaction = await safeSdk.signTransaction(
+      safeTransaction
+    );
     console.log(signedSafeTransaction);
 
     const signerAddrResult = await client.invoke<any>({
@@ -118,16 +127,19 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
       safeTransactionData: safeTransaction.data,
       safeTxHash: txHash,
       senderAddress: signerAddr,
-      senderSignature: signedSafeTransaction.signatures.get(signerAddr.toLowerCase())!.data,
-      origin: "https://daata-unblock.vercel.app/"
-    }
+      senderSignature: signedSafeTransaction.signatures.get(
+        signerAddr.toLowerCase()
+      )!.data,
+      origin: "https://daata-unblock.vercel.app/",
+    };
 
     console.log(proposeTransactionArgs);
-    await safeApi.proposeTransaction(proposeTransactionArgs)
+    await safeApi.proposeTransaction(proposeTransactionArgs);
 
     return {
       safeTxHash: txHash,
-      signature: signedSafeTransaction.signatures.get(signerAddr.toLowerCase())!.data,
+      signature: signedSafeTransaction.signatures.get(signerAddr.toLowerCase())!
+        .data,
     };
   }
 
@@ -144,17 +156,17 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
     const safeApi = new SafeAPIKit({
       txServiceUrl: this.config.txServiceUrl,
       ethAdapter: this.config.ethAdapter,
-    })
+    });
 
     const transaction = await safeApi.getTransaction(args.safeTxHash);
     console.log("tx", transaction);
 
-    const result = await safeSdk.signTransaction(transaction)
+    const result = await safeSdk.signTransaction(transaction);
     console.log("sign result", result);
-    
+
     return {
       transactionHash: args.safeTxHash,
-      signatures: Array.from(result.signatures.values())
+      signatures: Array.from(result.signatures.values()),
     };
   }
 
@@ -171,17 +183,17 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
     const safeApi = new SafeAPIKit({
       txServiceUrl: this.config.txServiceUrl,
       ethAdapter: this.config.ethAdapter,
-    })
+    });
 
     const transaction = await safeApi.getTransaction(args.safeTxHash);
     console.log("tx", transaction);
 
-    const result = await safeSdk.executeTransaction(transaction)
+    const result = await safeSdk.executeTransaction(transaction);
     console.log("sign result", result);
-    
+
     return {
       txHash: args.safeTxHash,
-      txResponse: result.transactionResponse
+      txResponse: result.transactionResponse,
     };
   }
 
@@ -352,7 +364,7 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
       args: {
         moduleAddress: args.moduleAddress,
       },
-      env: _env
+      env: _env,
     });
 
     if (!encodeDisableModuleDataResult.ok) {
