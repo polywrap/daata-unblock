@@ -4,6 +4,7 @@ import { CoreClient } from "@polywrap/core-js";
 import { Uri } from "@polywrap/client-js";
 import Safe from "@safe-global/protocol-kit";
 import { EthersAdapter } from "@safe-global/protocol-kit";
+import { SafeTransaction } from "@safe-global/safe-core-sdk-types";
 
 export interface Log {
   blockNumber: bigint;
@@ -168,7 +169,7 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
       connection,
     };
     const safeTransactionResult = await client.invoke<{
-      data: Record<string, unknown>;
+      data: SafeTransaction;
     }>({
       uri: new Uri("wrapscan.io/polywrap/protocol-kit@0.1.0"),
       method: "createTransaction",
@@ -199,19 +200,22 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
       throw txHashResult.error;
     }
 
-    await this.signTransaction(
-      {
-        safeAddress: args.safeAddress,
-        safeTxHash: txHashResult.value,
-      },
-      client,
-      env,
-      uri
-    );
+    // const result = await client.invoke<string>({
+    //   uri: new Uri("plugin/safe-api-kit@1.0"),
+    //   method: "addSignature",
+    //   args: {
+    //     tx: safeTransactionResult.value.data,
+    //   },
+    // });
 
-    return {
-      safeTxHash: txHashResult.value,
-    };
+    const safeSdk: Safe = await Safe.create({
+      ethAdapter: this.config.ethAdapter,
+      safeAddress: args.safeAddress,
+    });
+
+    const txn = await safeSdk.signTransaction(safeTransactionResult.value.data);
+
+    return txn;
   }
 
   async signTransaction(
