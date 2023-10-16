@@ -171,7 +171,7 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
     uri?: string
   ) {
     const safeTransactionData: SafeTransactionDataPartial = {
-      to: ethers.getAddress(args.to),
+      to: ethers.utils.getAddress(args.to),
       value: args.value,
       data: args.data
     }
