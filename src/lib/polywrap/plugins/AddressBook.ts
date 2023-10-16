@@ -2,15 +2,15 @@ import { API_URL } from "@/constants";
 import http from "@/lib/http";
 import { PluginModule, PluginPackage } from "@polywrap/plugin-js";
 
-interface AddressEntryDTO {
-  id: string;
-  name: string;
-  address: string;
-}
+// interface AddressEntryDTO {
+//   id: string;
+//   name: string;
+//   address: string;
+// }
 
 export class AddressBookPlugin extends PluginModule<{}> {
   async get(args: { key: string }) {
-    const { data } = await http.get<AddressEntryDTO | null>(
+    const { data } = await http.get<any>(
       `addressBook/${args.key}`
     );
 
@@ -18,16 +18,16 @@ export class AddressBookPlugin extends PluginModule<{}> {
       return null;
     }
 
-    return data.address;
+    return data;
   }
 
   async set(args: { key: string; value: string }) {
-    const { data } = await http.post<AddressEntryDTO>(`addressBook`, {
+    const { data } = await http.post<unknown>(`addressBook`, {
       name: args.key,
       address: args.value,
     });
 
-    return data.address;
+    return data;
   }
 }
 
