@@ -1,8 +1,8 @@
-import { API_URL } from "@/constants";
-import http from "@/lib/http";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
 import { ConversationDTO } from "@/lib/models/conversation";
 import { UserMessageType } from "@/lib/models/user";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import http from "@/lib/http";
 
 export default function useSendInvocationResult(conversationId: string) {
   const queryClient = useQueryClient();

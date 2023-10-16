@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { CHAT_SUGGESTIONS } from "@/lib/constants";
 import ChatSuggestions from "@/app/components/ChatSuggestions";
 import InvocationMessageBox from "./components/InvocationMessageBox";
+import InvocationResult from "@/app/components/InvocationResult";
 import { MessageType } from "@/lib/models/message";
 import { OPTIMISTIC_CONVERSATION_ID } from "@/constants";
 import TextMessageBox from "./components/TextMessageBox";
@@ -43,14 +44,17 @@ const Conversation = () => {
 
   const isLoading = isLoadingAddMessage || conversationIsOptimisticPlaceholder;
 
-  const lastMessage = conversation?.messages?.length ? conversation.messages[conversation.messages.length - 1] : undefined;
+  const lastMessage = conversation?.messages?.length
+    ? conversation.messages[conversation.messages.length - 1]
+    : undefined;
 
   const shouldDisableInput =
     isLoading ||
     !conversation ||
     conversation.completed ||
-    conversationIsOptimisticPlaceholder || 
-    (lastMessage?.kind === MessageType.InvocationMessage && lastMessage.method !== "askQuestion");
+    conversationIsOptimisticPlaceholder ||
+    (lastMessage?.kind === MessageType.InvocationMessage &&
+      lastMessage.method !== "askQuestion");
 
   const onSuggestionSelect = (prompt: string) => {
     setPromptValue(prompt);
@@ -99,6 +103,11 @@ const Conversation = () => {
                     );
                   }
 
+                  break;
+                case MessageType.InvocationResultMessage:
+                  return (
+                    <InvocationResult text="asdf" type={"success"} data={message.result}></InvocationResult>
+                  );
                   break;
                 case MessageType.TextMessage:
                   return <TextMessageBox key={message.id} message={message} />;
