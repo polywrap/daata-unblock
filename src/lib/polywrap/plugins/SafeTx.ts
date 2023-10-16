@@ -194,6 +194,7 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
     cache.set({key: txHash, value: JSON.stringify(safeTransaction)});
 
     const signedSafeTransaction = await safeSdk.signTransaction(safeTransaction);
+    console.log(signedSafeTransaction);
 
     const signerAddrResult = await client.invoke<any>({
       uri: new Uri("wrapscan.io/polywrap/ethers@1.1.1"),
@@ -213,7 +214,7 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
       safeTransactionData: safeTransaction.data,
       safeTxHash: txHash,
       senderAddress: signerAddr,
-      senderSignature: signedSafeTransaction.signatures.get(signerAddr)!.data,
+      senderSignature: signedSafeTransaction.signatures.get(signerAddr.toLowerCase())!.data,
       origin: "https://daata-unblock.vercel.app/"
     }
 
@@ -222,7 +223,7 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
 
     return {
       safeTxHash: txHash,
-      signature: signedSafeTransaction.signatures.get(signerAddr)!.data,
+      signature: signedSafeTransaction.signatures.get(signerAddr.toLowerCase())!.data,
     }
     // const txHash = await safeSdk.getTransactionHash(safeTransaction)
     // const approveTxResponse = await safeSdk.approveTransactionHash(txHash)
