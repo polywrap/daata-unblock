@@ -2,6 +2,8 @@ import { PluginModule, PluginPackage } from "@polywrap/plugin-js";
 
 import { CoreClient } from "@polywrap/core-js";
 import { Uri } from "@polywrap/client-js";
+import Safe from "@safe-global/protocol-kit";
+import { EthersAdapter } from "@safe-global/protocol-kit";
 
 export interface Log {
   blockNumber: bigint;
@@ -118,7 +120,11 @@ export type ArgsDeploySafe = {
   threshold: number;
 };
 
-export class SafeTxPlugin extends PluginModule<{}> {
+export type SafeTxPluginConfig = {
+  ethAdapter: EthersAdapter;
+};
+
+export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
   async deploySafe(
     args: ArgsDeploySafe,
     client: CoreClient,
@@ -220,20 +226,27 @@ export class SafeTxPlugin extends PluginModule<{}> {
       connection: connection,
     };
 
-    const signatureResult = await client.invoke<Signature>({
-      uri: new Uri("wrapscan.io/polywrap/protocol-kit@0.1.0"),
-      method: "signTransactionHash",
-      args: {
-        hash: args.safeTxHash,
-      },
-      env: _env,
+    const safeSdk: Safe = await Safe.create({
+      ethAdapter: this.config.ethAdapter,
+      safeAddress: args.safeAddress,
     });
 
-    if (!signatureResult.ok) {
-      throw signatureResult.error;
-    }
+    const signature = await safeSdk.signTransactionHash(args.safeTxHash);
 
-    const signature = signatureResult.value;
+    // const signatureResult = await client.invoke<Signature>({
+    //   uri: new Uri("wrapscan.io/polywrap/protocol-kit@0.1.0"),
+    //   method: "signTransactionHash",
+    //   args: {
+    //     hash: args.safeTxHash,
+    //   },
+    //   env: _env,
+    // });
+
+    // if (!signatureResult.ok) {
+    //   throw signatureResult.error;
+    // }
+
+    // const signature = signatureResult.value;
 
     const confirmedSignatureResult = await client.invoke<string>({
       uri: new Uri("plugin/safe-api-kit@1.0"),
@@ -512,8 +525,8 @@ export class SafeTxPlugin extends PluginModule<{}> {
   }
 }
 
-export const makeSafeTxPlugin = () => {
-  return PluginPackage.from(new SafeTxPlugin({}), {
+export const makeSafeTxPlugin = (config: SafeTxPluginConfig) => {
+  return PluginPackage.from(new SafeTxPlugin(config), {
     name: "safe-tx-plugin",
     type: "plugin",
     version: "0.1.0",
