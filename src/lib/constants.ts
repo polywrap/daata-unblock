@@ -35,8 +35,8 @@ export const CHAT_SUGGESTIONS: ChatSuggestion[] = [
     prompt: "Sign a pending transaction on my Safe",
   },
   {
-    title: "📘 List the capabilities Unblock has",
+    title: "📘 What can you do?",
     subtitle: "",
-    prompt: "List the capabilities Unblock has",
+    prompt: "What can you do?",
   },
 ];
