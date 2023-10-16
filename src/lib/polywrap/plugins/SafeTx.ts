@@ -6,6 +6,8 @@ import Safe from "@safe-global/protocol-kit";
 import { EthersAdapter } from "@safe-global/protocol-kit";
 import { SafeTransaction, SafeTransactionDataPartial } from "@safe-global/safe-core-sdk-types";
 import { AddressBookPlugin } from "./AddressBook";
+import { Signer } from "ethers";
+import SafeAPIKit from "@safe-global/api-kit";
 
 
 export interface Log {
@@ -125,6 +127,8 @@ export type ArgsDeploySafe = {
 
 export type SafeTxPluginConfig = {
   ethAdapter: EthersAdapter;
+  txServiceUrl: string;
+  signer: Signer;
 };
 
 export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
@@ -175,10 +179,15 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
       ethAdapter: this.config.ethAdapter,
       safeAddress: args.safeAddress,
     });
+    const cache = new AddressBookPlugin({});
+    const safeApi = new SafeAPIKit({
+      txServiceUrl: this.config.txServiceUrl,
+      ethAdapter: this.config.ethAdapter,
+    })
+
     const safeTransaction = await safeSdk.createTransaction({ safeTransactionData })
     const txHash = await safeSdk.getTransactionHash(safeTransaction)
 
-    const cache = new AddressBookPlugin({})
     cache.set({key: txHash, value: JSON.stringify(safeTransaction)});
 
     const signedSafeTransaction = await safeSdk.signTransaction(safeTransaction);
@@ -195,25 +204,18 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
 
     const signerAddr = signerAddrResult.value;
 
-    const proposedTx = await client.invoke<any>({
-      uri: new Uri("plugin/safe-api-kit@1.0"),
-      method: "proposeTransaction",
-      args: {
-        safeAddress: args.safeAddress,
-        safeTransactionData: safeTransaction,
-        safeTxHash: txHash,
-        senderAddress: signerAddr,
-        senderSignature: signedSafeTransaction.signatures.get(signerAddr)!.data,
-        origin: "https://daata-unblock.vercel.app/"
-      },
-    });
+    if (!signedSafeTransaction.signatures.has(signerAddr)) {
+      throw "failed to sign transaction!"
+    }
 
-    if (!proposedTx.ok) {
-      throw proposedTx.error;
-    }
-    if (!proposedTx.value) {
-      throw "failed to propose transaction!"
-    }
+    await safeApi.proposeTransaction({
+      safeAddress: args.safeAddress,
+      safeTransactionData: safeTransaction.data,
+      safeTxHash: txHash,
+      senderAddress: signerAddr,
+      senderSignature: signedSafeTransaction.signatures.get(signerAddr)!.data,
+      origin: "https://daata-unblock.vercel.app/"
+    })
 
     return {
       safeTxHash: txHash,
