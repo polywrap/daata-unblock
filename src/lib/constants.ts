@@ -2,33 +2,33 @@ import { ChatSuggestion } from "./types";
 
 export const CHAT_SUGGESTIONS: ChatSuggestion[] = [
   {
-    title: "🏦 Check the safes I am in",
+    title: "🏦 List Safes where I am an owner",
     subtitle: "",
-    prompt: "Check the safes I am in",
+    prompt: "List Safes where I am an owner",
   },
   {
-    title: "🚀 Create a new safe",
+    title: "🚀 Create a new Safe with me as an owner",
     subtitle: "",
-    prompt: "Create a new safe",
+    prompt: "Create a new Safe with me as an owner",
   },
   {
-    title: "📋 Show the pending transactions in my safe",
+    title: "✍️ Create a new transaction to send 1 ETH to ENS/Wallet address from my safe",
     subtitle: "",
-    prompt: "Show the pending transactions in my safe",
+    prompt: "Create a new transaction to send 1 ETH to ENS/Wallet address from my safe",
   },
   {
-    title: "🖋️ Sign a pending transaction in my safe",
+    title: "📋 List pending multi-signature transactions on <enter_safe_address>",
     subtitle: "",
-    prompt: "Sign a pending transaction in my safe",
+    prompt: "List pending multi-signature transactions on <enter_safe_address>",
   },
   {
-    title: "ℹ️ Show me balance of my safe",
+    title: "🖋️ Sign a pending transaction on my Safe",
     subtitle: "",
-    prompt: "Show me balance of my safe",
+    prompt: "Sign a pending transaction on my Safe",
   },
   {
-    title: "✍️ Create a new safe transaction",
+    title: "📘 List the capabilities Unblock has",
     subtitle: "",
-    prompt: "Create a new safe transaction",
+    prompt: "List the capabilities Unblock has",
   },
 ];
