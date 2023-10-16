@@ -116,10 +116,9 @@ export interface SafeMultisigTransactionResponse {
 export type ArgsDeploySafe = {
   owners: string[];
   threshold: number;
-}
+};
 
 export class SafeTxPlugin extends PluginModule<{}> {
-
   async deploySafe(
     args: ArgsDeploySafe,
     client: CoreClient,
@@ -133,12 +132,12 @@ export class SafeTxPlugin extends PluginModule<{}> {
         input: {
           safeAccountConfig: {
             owners: args.owners,
-            threshold: args.threshold
-          }
+            threshold: args.threshold,
+          },
         },
         txOptions: {
-          gasLimit: "12000000"
-        }
+          gasLimit: "12000000",
+        },
       },
     });
 
@@ -147,7 +146,7 @@ export class SafeTxPlugin extends PluginModule<{}> {
     }
 
     return {
-      safeAddress: deploySafeResult.value
+      safeAddress: deploySafeResult.value,
     };
   }
 
@@ -157,21 +156,14 @@ export class SafeTxPlugin extends PluginModule<{}> {
     env?: Record<string, unknown>,
     uri?: string
   ) {
-    const chainIdResult = await client.invoke({
-      uri: new Uri("wrap://wrapscan.io/polywrap/ethers@1.1.1"),
-      method: "getChainId",
-      args: {},
-    })
-    if (!chainIdResult.ok) {
-      throw chainIdResult.error;
-    }
+    const connection = await this._getConnection(client);
     const _env = {
       safeAddress: args.safeAddress,
-      connection: {
-        networkNameOrChainId: chainIdResult.value
-      }
-    }
-    const safeTransactionResult = await client.invoke<{data: Record<string, unknown>}>({
+      connection,
+    };
+    const safeTransactionResult = await client.invoke<{
+      data: Record<string, unknown>;
+    }>({
       uri: new Uri("wrapscan.io/polywrap/protocol-kit@0.1.0"),
       method: "createTransaction",
       args: {
@@ -181,7 +173,7 @@ export class SafeTxPlugin extends PluginModule<{}> {
           data: args.data,
         },
       },
-      env: _env
+      env: _env,
     });
 
     if (!safeTransactionResult.ok) {
@@ -212,7 +204,7 @@ export class SafeTxPlugin extends PluginModule<{}> {
     );
 
     return {
-      safeTxHash: txHashResult.value
+      safeTxHash: txHashResult.value,
     };
   }
 
@@ -222,20 +214,11 @@ export class SafeTxPlugin extends PluginModule<{}> {
     env?: Record<string, unknown>,
     uri?: string
   ) {
-    const chainIdResult = await client.invoke({
-      uri: new Uri("wrap://wrapscan.io/polywrap/ethers@1.1.1"),
-      method: "getChainId",
-      args: {},
-    })
-    if (!chainIdResult.ok) {
-      throw chainIdResult.error;
-    }
+    const connection = await this._getConnection(client);
     const _env = {
       safeAddress: args.safeAddress,
-      connection: {
-        networkNameOrChainId: chainIdResult.value
-      }
-    }
+      connection: connection,
+    };
 
     const signatureResult = await client.invoke<Signature>({
       uri: new Uri("wrapscan.io/polywrap/protocol-kit@0.1.0"),
@@ -266,7 +249,7 @@ export class SafeTxPlugin extends PluginModule<{}> {
     }
 
     return {
-      signature: confirmedSignatureResult.value
+      signature: confirmedSignatureResult.value,
     };
   }
 
@@ -276,20 +259,11 @@ export class SafeTxPlugin extends PluginModule<{}> {
     env?: Record<string, unknown>,
     uri?: string
   ): Promise<any> {
-    const chainIdResult = await client.invoke({
-      uri: new Uri("wrap://wrapscan.io/polywrap/ethers@1.1.1"),
-      method: "getChainId",
-      args: {},
-    })
-    if (!chainIdResult.ok) {
-      throw chainIdResult.error;
-    }
+    const connection = await this._getConnection(client);
     const _env = {
       safeAddress: args.safeAddress,
-      connection: {
-        networkNameOrChainId: chainIdResult.value
-      }
-    }
+      connection: connection,
+    };
 
     const txResult = await client.invoke<SafeMultisigTransactionResponse>({
       uri: new Uri("plugin/safe-api-kit@1.0"),
@@ -337,8 +311,8 @@ export class SafeTxPlugin extends PluginModule<{}> {
           data: txData,
         },
         options: {
-          gasLimit: "12000000"
-        }
+          gasLimit: "12000000",
+        },
       },
       env: _env,
     });
@@ -520,6 +494,21 @@ export class SafeTxPlugin extends PluginModule<{}> {
       env,
       uri
     );
+  }
+
+  async _getConnection(client: CoreClient): Promise<any> {
+    const chainIdResult = await client.invoke<string>({
+      uri: new Uri("wrap://wrapscan.io/polywrap/ethers@1.1.1"),
+      method: "getChainId",
+      args: {},
+    });
+    if (!chainIdResult.ok) {
+      throw chainIdResult.error;
+    }
+    if (chainIdResult.value == "100") {
+      return { node: "https://gnosis.drpc.org" };
+    }
+    return { networkNameOrChainId: chainIdResult.value };
   }
 }
 
