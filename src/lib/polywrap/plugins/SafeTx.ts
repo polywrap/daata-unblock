@@ -4,7 +4,7 @@ import { CoreClient } from "@polywrap/core-js";
 import { Uri } from "@polywrap/client-js";
 import Safe from "@safe-global/protocol-kit";
 import { EthersAdapter } from "@safe-global/protocol-kit";
-import { SafeTransaction } from "@safe-global/safe-core-sdk-types";
+import { SafeTransaction, SafeTransactionDataPartial } from "@safe-global/safe-core-sdk-types";
 
 export interface Log {
   blockNumber: bigint;
@@ -163,51 +163,75 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
     env?: Record<string, unknown>,
     uri?: string
   ) {
-    const connection = await this._getConnection(client);
-    const _env = {
+
+    const safeTransactionData: SafeTransactionDataPartial = {
+      to: args.to,
+      value: args.value,
+      data: args.data
+    }
+
+    const safeSdk: Safe = await Safe.create({
+      ethAdapter: this.config.ethAdapter,
       safeAddress: args.safeAddress,
-      connection,
-    };
-    const safeTransactionResult = await client.invoke<{
-      data: SafeTransaction;
-    }>({
-      uri: new Uri("wrapscan.io/polywrap/protocol-kit@0.1.0"),
-      method: "createTransaction",
-      args: {
-        tx: {
-          to: args.to,
-          value: args.value,
-          data: args.data,
-        },
-      },
-      env: _env,
     });
+    const safeTransaction = await safeSdk.createTransaction({ safeTransactionData })
+    const txHash = await safeSdk.getTransactionHash(safeTransaction)
+    const approveTxResponse = await safeSdk.approveTransactionHash(txHash)
+    const receipt = await approveTxResponse.transactionResponse?.wait()
 
-    if (!safeTransactionResult.ok) {
-      throw safeTransactionResult.error;
+    return {
+      safeTxHash: txHash,
+      txReceipt: receipt 
     }
 
-    const txHashResult = await client.invoke<string>({
-      uri: new Uri("wrapscan.io/polywrap/protocol-kit@0.1.0"),
-      method: "getTransactionHash",
-      args: {
-        tx: safeTransactionResult.value.data,
-      },
-      env: _env,
-    });
+    // const signedSafeTransaction = await safeSdk.signTransaction(safeTransaction)
 
-    if (!txHashResult.ok) {
-      throw txHashResult.error;
-    }
+    // return signedSafeTransaction;
+    // const connection = await this._getConnection(client);
+    // const _env = {
+    //   safeAddress: args.safeAddress,
+    //   connection,
+    // };
+    // const safeTransactionResult = await client.invoke<{
+    //   data: SafeTransaction;
+    // }>({
+    //   uri: new Uri("wrapscan.io/polywrap/protocol-kit@0.1.0"),
+    //   method: "createTransaction",
+    //   args: {
+    //     tx: {
+    //       to: args.to,
+    //       value: args.value,
+    //       data: args.data,
+    //     },
+    //   },
+    //   env: _env,
+    // });
 
-    return await client.invoke<unknown>({
-      uri: new Uri("wrapscan.io/polywrap/protocol-kit@0.1.0"),
-      method: "addSignature",
-      args: {
-        tx: safeTransactionResult.value.data,
-      },
-      env: _env
-    });
+    // if (!safeTransactionResult.ok) {
+    //   throw safeTransactionResult.error;
+    // }
+
+    // const txHashResult = await client.invoke<string>({
+    //   uri: new Uri("wrapscan.io/polywrap/protocol-kit@0.1.0"),
+    //   method: "getTransactionHash",
+    //   args: {
+    //     tx: safeTransactionResult.value.data,
+    //   },
+    //   env: _env,
+    // });
+
+    // if (!txHashResult.ok) {
+    //   throw txHashResult.error;
+    // }
+
+    // return await client.invoke<unknown>({
+    //   uri: new Uri("wrapscan.io/polywrap/protocol-kit@0.1.0"),
+    //   method: "addSignature",
+    //   args: {
+    //     data: safeTransactionResult.value.data,
+    //   },
+    //   env: _env
+    // });
 
     // const safeSdk: Safe = await Safe.create({
     //   ethAdapter: this.config.ethAdapter,
@@ -238,7 +262,14 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
       safeAddress: args.safeAddress,
     });
 
-    const signature = await safeSdk.signTransactionHash(args.safeTxHash);
+    const approveTxResponse = await safeSdk.approveTransactionHash(args.safeTxHash)
+    const receipt = await approveTxResponse.transactionResponse?.wait()
+
+    return {
+      txReceipt: receipt 
+    }
+
+    // const signature = await safeSdk.signTransactionHash(args.safeTxHash);
 
     // const signatureResult = await client.invoke<Signature>({
     //   uri: new Uri("wrapscan.io/polywrap/protocol-kit@0.1.0"),
@@ -255,22 +286,22 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
 
     // const signature = signatureResult.value;
 
-    const confirmedSignatureResult = await client.invoke<string>({
-      uri: new Uri("plugin/safe-api-kit@1.0"),
-      method: "confirmTransaction",
-      args: {
-        safeTxHash: args.safeTxHash,
-        signature: signature.data,
-      },
-    });
+    // const confirmedSignatureResult = await client.invoke<string>({
+    //   uri: new Uri("plugin/safe-api-kit@1.0"),
+    //   method: "confirmTransaction",
+    //   args: {
+    //     safeTxHash: args.safeTxHash,
+    //     signature: signature.data,
+    //   },
+    // });
 
-    if (!confirmedSignatureResult.ok) {
-      throw confirmedSignatureResult.error;
-    }
+    // if (!confirmedSignatureResult.ok) {
+    //   throw confirmedSignatureResult.error;
+    // }
 
-    return {
-      signature: confirmedSignatureResult.value,
-    };
+    // return {
+    //   signature: confirmedSignatureResult.value,
+    // };
   }
 
   async executeTransaction(
