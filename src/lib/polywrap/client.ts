@@ -37,8 +37,6 @@ const getBasePolywrapClientConfigBuilder = () => {
     makeEnsPlugin()
   );
 
-  builder.setPackage("plugin/safe-tx-plugin@1.0", makeSafeTxPlugin());
-
   builder.addEnv("wrapscan.io/polywrap/covalent@1.0", {
     apiKey: "cqt_rQdPCkVXWP9vGMRFY9rgb6vCDfGv",
     vsCurrency: "usd",
@@ -46,7 +44,10 @@ const getBasePolywrapClientConfigBuilder = () => {
   });
 
   // HACK to support proper version of protocol kit
-  builder.setRedirect("wrapscan.io/polywrap/protocol-kit@0.1.0", "wrapscan.io/polywrap/protocol-kit@0.0.1");
+  builder.setRedirect(
+    "wrapscan.io/polywrap/protocol-kit@0.1.0",
+    "wrapscan.io/polywrap/protocol-kit@0.0.1"
+  );
 
   return builder;
 };
@@ -125,6 +126,11 @@ export const getPolywrapClient = async (
         txServiceUrl: safeTxServiceUrl,
         ethAdapter: ethAdapter,
       })
+    );
+
+    builder.setPackage(
+      "plugin/safe-tx-plugin@1.0",
+      makeSafeTxPlugin({ ethAdapter })
     );
   }
 
