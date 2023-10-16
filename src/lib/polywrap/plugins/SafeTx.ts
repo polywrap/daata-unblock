@@ -183,15 +183,6 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
 
     const signedSafeTransaction = await safeSdk.signTransaction(safeTransaction);
 
-    // proposeTransaction(
-    //   safeAddress: String!,
-    //   safeTransactionData: SafeTransactionData!,
-    //   safeTxHash: String!,
-    //   senderAddress: String!,
-    //   senderSignature: String!,
-    //   origin: String
-    // ): Boolean!
-
     const signerAddrResult = await client.invoke<any>({
       uri: new Uri("wrapscan.io/polywrap/ethers@1.1.1"),
       method: "getSignerAddress",
@@ -297,23 +288,24 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
     env?: Record<string, unknown>,
     uri?: string
   ) {
+    throw "not implemented"
     // const connection = await this._getConnection(client);
     // const _env = {
     //   safeAddress: args.safeAddress,
     //   connection: connection,
     // };
 
-    const safeSdk: Safe = await Safe.create({
-      ethAdapter: this.config.ethAdapter,
-      safeAddress: args.safeAddress,
-    });
+    // const safeSdk: Safe = await Safe.create({
+    //   ethAdapter: this.config.ethAdapter,
+    //   safeAddress: args.safeAddress,
+    // });
 
-    const cache = new AddressBookPlugin({})
+    // const cache = new AddressBookPlugin({})
 
-    const safeTransaction = await cache.get({key: args.safeTxHash});
-    const signedTx = await safeSdk.signTransaction(safeTransaction);
+    // const safeTransaction = await cache.get({key: args.safeTxHash});
+    // const signedTx = await safeSdk.signTransaction(safeTransaction);
 
-    signedTx.signatures
+    // signedTx.signatures
 
     // const approveTxResponse = await safeSdk.approveTransactionHash(args.safeTxHash)
     // const receipt = await approveTxResponse.transactionResponse?.wait()
@@ -363,13 +355,14 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
     env?: Record<string, unknown>,
     uri?: string
   ): Promise<any> {
-    const safeSdk: Safe = await Safe.create({
-      ethAdapter: this.config.ethAdapter,
-      safeAddress: args.safeAddress,
-    });
+    throw "not implemented"
+    // const safeSdk: Safe = await Safe.create({
+    //   ethAdapter: this.config.ethAdapter,
+    //   safeAddress: args.safeAddress,
+    // });
     
-    const txResponse = await safeSdk.executeTransaction(safeTransaction)
-    await txResponse.transactionResponse?.wait()
+    // const txResponse = await safeSdk.executeTransaction(safeTransaction)
+    // await txResponse.transactionResponse?.wait()
     // const connection = await this._getConnection(client);
     // const _env = {
     //   safeAddress: args.safeAddress,
