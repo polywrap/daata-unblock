@@ -189,6 +189,8 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
     const safeTransaction = await safeSdk.createTransaction({ safeTransactionData })
     const txHash = await safeSdk.getTransactionHash(safeTransaction)
 
+    console.log({txHash, safeTransaction})
+
     cache.set({key: txHash, value: JSON.stringify(safeTransaction)});
 
     const signedSafeTransaction = await safeSdk.signTransaction(safeTransaction);
@@ -198,6 +200,8 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
       method: "getSignerAddress",
       args: {},
     });
+
+    console.log(signerAddrResult);
 
     if (!signerAddrResult.ok) {
       throw signerAddrResult.error;
