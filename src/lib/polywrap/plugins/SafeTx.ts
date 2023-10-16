@@ -208,6 +208,13 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
       },
     });
 
+    if (!proposedTx.ok) {
+      throw proposedTx.error;
+    }
+    if (!proposedTx.value) {
+      throw "failed to propose transaction!"
+    }
+
     return {
       safeTxHash: txHash,
       signature: signedSafeTransaction.signatures.get(signerAddr)!.data,
