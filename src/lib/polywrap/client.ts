@@ -130,7 +130,7 @@ export const getPolywrapClient = async (
 
     builder.setPackage(
       "plugin/safe-tx-plugin@1.0",
-      makeSafeTxPlugin({ ethAdapter })
+      makeSafeTxPlugin({ ethAdapter, signer: safeOwner, txServiceUrl: safeTxServiceUrl })
     );
   }
 
