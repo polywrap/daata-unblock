@@ -7,6 +7,7 @@ import { EthersAdapter } from "@safe-global/protocol-kit";
 import { SafeTransaction, SafeTransactionDataPartial } from "@safe-global/safe-core-sdk-types";
 import { AddressBookPlugin } from "./AddressBook";
 import { Signer } from "ethers";
+import ethers from "ethers";
 import SafeAPIKit from "@safe-global/api-kit";
 
 
@@ -170,7 +171,7 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
     uri?: string
   ) {
     const safeTransactionData: SafeTransactionDataPartial = {
-      to: args.to,
+      to: ethers.utils.getAddress(args.to),
       value: args.value,
       data: args.data
     }
@@ -192,17 +193,17 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
 
     const signedSafeTransaction = await safeSdk.signTransaction(safeTransaction);
 
-    const signerAddrResult = await client.invoke<any>({
-      uri: new Uri("wrapscan.io/polywrap/ethers@1.1.1"),
-      method: "getSignerAddress",
-      args: {},
-    });
+    // const signerAddrResult = await client.invoke<any>({
+    //   uri: new Uri("wrapscan.io/polywrap/ethers@1.1.1"),
+    //   method: "getSignerAddress",
+    //   args: {},
+    // });
 
-    if (!signerAddrResult.ok) {
-      throw signerAddrResult.error;
-    }
+    // if (!signerAddrResult.ok) {
+    //   throw signerAddrResult.error;
+    // }
 
-    const signerAddr = signerAddrResult.value;
+    const signerAddr = await this.config.signer.getAddress();
 
     if (!signedSafeTransaction.signatures.has(signerAddr)) {
       throw "failed to sign transaction!"
