@@ -204,10 +204,6 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
     }
     const signerAddr = ethers.utils.getAddress(signerAddrResult.value);
 
-    if (!signedSafeTransaction.signatures.has(signerAddr)) {
-      throw "failed to sign transaction!"
-    }
-
     const proposeTransactionArgs = {
       safeAddress: args.safeAddress,
       safeTransactionData: safeTransaction.data,
