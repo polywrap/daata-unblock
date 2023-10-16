@@ -189,6 +189,8 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
     const safeTransaction = await safeSdk.createTransaction({ safeTransactionData })
     const txHash = await safeSdk.getTransactionHash(safeTransaction)
 
+    console.log({txHash, safeTransaction})
+
     cache.set({key: txHash, value: JSON.stringify(safeTransaction)});
 
     const signedSafeTransaction = await safeSdk.signTransaction(safeTransaction);
@@ -199,14 +201,12 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
       args: {},
     });
 
+    console.log(signerAddrResult);
+
     if (!signerAddrResult.ok) {
       throw signerAddrResult.error;
     }
     const signerAddr = ethers.utils.getAddress(signerAddrResult.value);
-
-    if (!signedSafeTransaction.signatures.has(signerAddr)) {
-      throw "failed to sign transaction!"
-    }
 
     const proposeTransactionArgs = {
       safeAddress: args.safeAddress,
