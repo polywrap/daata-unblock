@@ -171,7 +171,7 @@ export class SafeTxPlugin extends PluginModule<{}> {
         networkNameOrChainId: chainIdResult.value
       }
     }
-    const safeTransactionResult = await client.invoke({
+    const safeTransactionResult = await client.invoke<{data: Record<string, unknown>}>({
       uri: new Uri("wrapscan.io/polywrap/protocol-kit@0.1.0"),
       method: "createTransaction",
       args: {
@@ -192,7 +192,7 @@ export class SafeTxPlugin extends PluginModule<{}> {
       uri: new Uri("wrapscan.io/polywrap/protocol-kit@0.1.0"),
       method: "getTransactionHash",
       args: {
-        tx: safeTransactionResult.value,
+        tx: safeTransactionResult.value.data,
       },
       env: _env,
     });
