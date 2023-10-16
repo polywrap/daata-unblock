@@ -1,45 +1,13 @@
 import { PluginModule, PluginPackage } from "@polywrap/plugin-js";
-import { SafeTransaction, SafeTransactionDataPartial } from "@safe-global/safe-core-sdk-types";
+import { SafeTransactionDataPartial } from "@safe-global/safe-core-sdk-types";
 
-import { AddressBookPlugin } from "./AddressBook";
 import { CoreClient } from "@polywrap/core-js";
-import { EthersAdapter } from "@safe-global/protocol-kit";
+import { EthersAdapter, SafeAccountConfig, SafeFactory } from "@safe-global/protocol-kit";
 import Safe from "@safe-global/protocol-kit";
 import SafeAPIKit from "@safe-global/api-kit";
 import { Signer } from "ethers";
 import { Uri } from "@polywrap/client-js";
 import { ethers } from "ethers";
-
-export interface Log {
-  blockNumber: bigint;
-  blockHash: string;
-  transactionIndex: number;
-  removed: boolean;
-  address: string;
-  data: string;
-  topics: string[];
-  transactionHash: string;
-  logIndex: number;
-}
-
-export interface Ethers_TxReceipt {
-  to: string;
-  from: string;
-  contractAddress: string;
-  transactionIndex: number;
-  root?: string | null;
-  gasUsed: bigint;
-  logsBloom: string;
-  transactionHash: string;
-  logs: Log[];
-  blockNumber: bigint;
-  blockHash: string;
-  confirmations: number;
-  cumulativeGasUsed: bigint;
-  effectiveGasPrice: bigint;
-  type: number;
-  status?: number | null;
-}
 
 export type ArgsCreateTransaction = {
   safeAddress: string;
@@ -74,51 +42,6 @@ export type ArgsEnableModule = {
 };
 export type ArgsDisableModule = ArgsEnableModule;
 
-export type Signature = {
-  signer: string;
-  data: string;
-};
-
-export interface SafeMultisigConfirmationResponse {
-  owner: string;
-  submissionDate: string;
-  transactionHash?: string | null;
-  confirmationType?: string | null;
-  signature: string;
-  signatureType?: string | null;
-}
-
-export interface SafeMultisigTransactionResponse {
-  safe: string;
-  to: string;
-  value: string;
-  data?: string | null;
-  operation: number;
-  gasToken: string;
-  safeTxGas: number;
-  baseGas: number;
-  gasPrice: string;
-  refundReceiver?: string | null;
-  nonce: number;
-  executionDate: string;
-  submissionDate: string;
-  modified: string;
-  blockNumber?: number | null;
-  transactionHash: string;
-  safeTxHash: string;
-  executor?: string | null;
-  isExecuted: boolean;
-  isSuccessful?: boolean | null;
-  ethGasPrice?: string | null;
-  gasUsed?: number | null;
-  fee?: string | null;
-  origin: string;
-  dataDecoded?: string | null;
-  confirmationsRequired: number;
-  confirmations?: SafeMultisigConfirmationResponse[] | null;
-  trusted: boolean;
-  signatures?: string | null;
-}
 
 export type ArgsDeploySafe = {
   owners: string[];
@@ -138,29 +61,14 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
     env?: Record<string, unknown>,
     uri?: string
   ) {
-    const deploySafeResult = await client.invoke<string>({
-      uri: new Uri("wrapscan.io/polywrap/protocol-kit@0.1.0"),
-      method: "deploySafe",
-      args: {
-        input: {
-          safeAccountConfig: {
-            owners: args.owners,
-            threshold: args.threshold,
-          },
-        },
-        txOptions: {
-          gasLimit: "12000000",
-        },
-      },
-    });
-
-    if (!deploySafeResult.ok) {
-      throw deploySafeResult.error;
+    const safeFactory = await SafeFactory.create({ ethAdapter: this.config.ethAdapter })
+    const safeAccountConfig: SafeAccountConfig = {
+      owners: args.owners,
+      threshold: args.threshold,
     }
-
-    return {
-      safeAddress: deploySafeResult.value,
-    };
+    
+    const safeSdk: Safe = await safeFactory.deploySafe({ safeAccountConfig })
+    return await safeSdk.getAddress();
   }
 
   async createTransaction(
@@ -179,7 +87,6 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
       ethAdapter: this.config.ethAdapter,
       safeAddress: args.safeAddress,
     });
-    const cache = new AddressBookPlugin({});
     const safeApi = new SafeAPIKit({
       txServiceUrl: this.config.txServiceUrl,
       ethAdapter: this.config.ethAdapter,
@@ -189,8 +96,6 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
     const txHash = await safeSdk.getTransactionHash(safeTransaction)
 
     console.log({txHash, safeTransaction})
-
-    cache.set({key: txHash, value: JSON.stringify(safeTransaction)});
 
     const signedSafeTransaction = await safeSdk.signTransaction(safeTransaction);
     console.log(signedSafeTransaction);
@@ -223,75 +128,7 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
     return {
       safeTxHash: txHash,
       signature: signedSafeTransaction.signatures.get(signerAddr.toLowerCase())!.data,
-    }
-    // const txHash = await safeSdk.getTransactionHash(safeTransaction)
-    // const approveTxResponse = await safeSdk.approveTransactionHash(txHash)
-    // const receipt = await approveTxResponse.transactionResponse?.wait()
-
-    // return {
-    //   safeTxHash: txHash,
-    //   txReceipt: receipt 
-    // }
-
-    // const signedSafeTransaction = await safeSdk.signTransaction(safeTransaction)
-
-    // return signedSafeTransaction;
-    // const connection = await this._getConnection(client);
-    // const _env = {
-    //   safeAddress: args.safeAddress,
-    //   connection,
-    // };
-    // const safeTransactionResult = await client.invoke<{
-    //   data: SafeTransaction;
-    // }>({
-    //   uri: new Uri("wrapscan.io/polywrap/protocol-kit@0.1.0"),
-    //   method: "createTransaction",
-    //   args: {
-    //     tx: {
-    //       to: args.to,
-    //       value: args.value,
-    //       data: args.data,
-    //     },
-    //   },
-    //   env: _env,
-    // });
-
-    // if (!safeTransactionResult.ok) {
-    //   throw safeTransactionResult.error;
-    // }
-
-    // const txHashResult = await client.invoke<string>({
-    //   uri: new Uri("wrapscan.io/polywrap/protocol-kit@0.1.0"),
-    //   method: "getTransactionHash",
-    //   args: {
-    //     tx: safeTransactionResult.value.data,
-    //   },
-    //   env: _env,
-    // });
-
-    // if (!txHashResult.ok) {
-    //   throw txHashResult.error;
-    // }
-
-    // return await client.invoke<unknown>({
-    //   uri: new Uri("wrapscan.io/polywrap/protocol-kit@0.1.0"),
-    //   method: "addSignature",
-    //   args: {
-    //     data: safeTransactionResult.value.data,
-    //   },
-    //   env: _env
-    // });
-
-    // const safeSdk: Safe = await Safe.create({
-    //   ethAdapter: this.config.ethAdapter,
-    //   safeAddress: args.safeAddress,
-    // });
-
-    // console.log(safeTransactionResult.value.data)
-
-    // const txn = await safeSdk.signTransaction(safeTransactionResult.value.data);
-
-    // return txn;
+    };
   }
 
   async signTransaction(
@@ -319,66 +156,6 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
       transactionHash: args.safeTxHash,
       signatures: Array.from(result.signatures.values())
     };
-
-    throw "not implemented"
-    // const connection = await this._getConnection(client);
-    // const _env = {
-    //   safeAddress: args.safeAddress,
-    //   connection: connection,
-    // };
-
-    // const safeSdk: Safe = await Safe.create({
-    //   ethAdapter: this.config.ethAdapter,
-    //   safeAddress: args.safeAddress,
-    // });
-
-    // const cache = new AddressBookPlugin({})
-
-    // const safeTransaction = await cache.get({key: args.safeTxHash});
-    // const signedTx = await safeSdk.signTransaction(safeTransaction);
-
-    // signedTx.signatures
-
-    // const approveTxResponse = await safeSdk.approveTransactionHash(args.safeTxHash)
-    // const receipt = await approveTxResponse.transactionResponse?.wait()
-
-    // return {
-    //   txReceipt: receipt 
-    // }
-
-    // const signature = await safeSdk.signTransactionHash(args.safeTxHash);
-
-    // const signatureResult = await client.invoke<Signature>({
-    //   uri: new Uri("wrapscan.io/polywrap/protocol-kit@0.1.0"),
-    //   method: "signTransactionHash",
-    //   args: {
-    //     hash: args.safeTxHash,
-    //   },
-    //   env: _env,
-    // });
-
-    // if (!signatureResult.ok) {
-    //   throw signatureResult.error;
-    // }
-
-    // const signature = signatureResult.value;
-
-    // const confirmedSignatureResult = await client.invoke<string>({
-    //   uri: new Uri("plugin/safe-api-kit@1.0"),
-    //   method: "confirmTransaction",
-    //   args: {
-    //     safeTxHash: args.safeTxHash,
-    //     signature: signature.data,
-    //   },
-    // });
-
-    // if (!confirmedSignatureResult.ok) {
-    //   throw confirmedSignatureResult.error;
-    // }
-
-    // return {
-    //   signature: confirmedSignatureResult.value,
-    // };
   }
 
   async executeTransaction(
@@ -406,78 +183,6 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
       txHash: args.safeTxHash,
       txResponse: result.transactionResponse
     };
-
-    throw "not implemented"
-    // const safeSdk: Safe = await Safe.create({
-    //   ethAdapter: this.config.ethAdapter,
-    //   safeAddress: args.safeAddress,
-    // });
-    
-    // const txResponse = await safeSdk.executeTransaction(safeTransaction)
-    // await txResponse.transactionResponse?.wait()
-    // const connection = await this._getConnection(client);
-    // const _env = {
-    //   safeAddress: args.safeAddress,
-    //   connection: connection,
-    // };
-
-    // const txResult = await client.invoke<SafeMultisigTransactionResponse>({
-    //   uri: new Uri("plugin/safe-api-kit@1.0"),
-    //   method: "getTransaction",
-    //   args: {
-    //     safeTxHash: args.safeTxHash,
-    //   },
-    // });
-
-    // if (!txResult.ok) {
-    //   throw txResult.error;
-    // }
-
-    // const tx: SafeMultisigTransactionResponse = txResult.value;
-    // const signatures: Map<string, Signature> = new Map();
-    // if (!tx.confirmations) {
-    //   throw `No signatures found for the transaction with hash: ${args.safeTxHash}, require: ${tx.confirmationsRequired}`;
-    // }
-    // for (const confirmation of tx.confirmations) {
-    //   signatures.set(confirmation.owner, {
-    //     signer: confirmation.owner,
-    //     data: confirmation.signature,
-    //   });
-    // }
-
-    // const txData = {
-    //   to: tx.to,
-    //   value: tx.value,
-    //   data: tx.data,
-    //   operation: tx.operation,
-    //   safeTxGas: tx.safeTxGas,
-    //   baseGas: tx.baseGas,
-    //   gasPrice: tx.gasPrice,
-    //   gasToken: tx.gasToken,
-    //   refundReceiver: tx.refundReceiver,
-    //   nonce: tx.nonce,
-    // };
-
-    // const executeTxResult = await client.invoke<any>({
-    //   uri: new Uri("wrapscan.io/polywrap/protocol-kit@0.1.0"),
-    //   method: "executeTransaction",
-    //   args: {
-    //     tx: {
-    //       signatures,
-    //       data: txData,
-    //     },
-    //     options: {
-    //       gasLimit: "12000000",
-    //     },
-    //   },
-    //   env: _env,
-    // });
-
-    // if (!executeTxResult.ok) {
-    //   throw executeTxResult.error;
-    // }
-
-    // return executeTxResult.value;
   }
 
   async addOwner(
