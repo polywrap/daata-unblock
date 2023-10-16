@@ -5,6 +5,7 @@ import * as Loader from "react-loader-spinner";
 import { useEffect, useRef, useState } from "react";
 
 import { CHAT_SUGGESTIONS } from "@/lib/constants";
+import { ChatSuggestion } from "@/lib/types";
 import ChatSuggestions from "@/app/components/ChatSuggestions";
 import InvocationMessageBox from "./components/InvocationMessageBox";
 import InvocationResult from "@/app/components/InvocationResult";
@@ -56,9 +57,20 @@ const Conversation = () => {
     (lastMessage?.kind === MessageType.InvocationMessage &&
       lastMessage.method !== "askQuestion");
 
-  const onSuggestionSelect = (prompt: string) => {
-    setPromptValue(prompt);
-    promptRef.current?.focus();
+  const onSuggestionSelect = (suggestion: ChatSuggestion) => {
+    setPromptValue(suggestion.prompt);
+    const setFocus = () => {
+      promptRef.current?.focus();
+      if (suggestion.preselect) {
+        promptRef.current?.setSelectionRange(
+          suggestion.preselect.from,
+          suggestion.preselect.to
+        );
+      }
+    };
+    setTimeout(() => {
+      setFocus();
+    });
   };
 
   return (

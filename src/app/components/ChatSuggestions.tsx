@@ -3,16 +3,16 @@ import clsx from "clsx";
 
 type Props = {
   suggestions: ChatSuggestion[];
-  onSuggestionSelect?: (prompt: string) => void;
+  onSuggestionSelect?: (suggestion: ChatSuggestion) => void;
 };
 
 export default function ChatSuggestions({
   suggestions,
   onSuggestionSelect,
 }: Props) {
-  const maybeRunSuggestion = (prompt: string) => {
+  const maybeRunSuggestion = (suggestion: ChatSuggestion) => {
     if (onSuggestionSelect) {
-      onSuggestionSelect(prompt);
+      onSuggestionSelect(suggestion);
     }
   };
 
@@ -25,7 +25,7 @@ export default function ChatSuggestions({
             "rounded-lg bg-white border-primary-300 border-2 drop-shadow-md h-14 py-1 px-3 text-xs flex flex-col justify-center",
             {"cursor-pointer": onSuggestionSelect}
           )}
-          onClick={() => maybeRunSuggestion(suggestion.prompt)}
+          onClick={() => maybeRunSuggestion(suggestion)}
         >
           {suggestion.title}
           <br />
