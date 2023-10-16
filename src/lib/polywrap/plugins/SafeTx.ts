@@ -200,22 +200,24 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
       throw txHashResult.error;
     }
 
-    // const result = await client.invoke<string>({
-    //   uri: new Uri("plugin/safe-api-kit@1.0"),
-    //   method: "addSignature",
-    //   args: {
-    //     tx: safeTransactionResult.value.data,
-    //   },
-    // });
-
-    const safeSdk: Safe = await Safe.create({
-      ethAdapter: this.config.ethAdapter,
-      safeAddress: args.safeAddress,
+    return await client.invoke<unknown>({
+      uri: new Uri("plugin/safe-api-kit@1.0"),
+      method: "addSignature",
+      args: {
+        tx: safeTransactionResult.value.data,
+      },
     });
 
-    const txn = await safeSdk.signTransaction(safeTransactionResult.value.data);
+    // const safeSdk: Safe = await Safe.create({
+    //   ethAdapter: this.config.ethAdapter,
+    //   safeAddress: args.safeAddress,
+    // });
 
-    return txn;
+    // console.log(safeTransactionResult.value.data)
+
+    // const txn = await safeSdk.signTransaction(safeTransactionResult.value.data);
+
+    // return txn;
   }
 
   async signTransaction(
