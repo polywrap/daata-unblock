@@ -1,15 +1,14 @@
 import { PluginModule, PluginPackage } from "@polywrap/plugin-js";
-
-import { CoreClient } from "@polywrap/core-js";
-import { Uri } from "@polywrap/client-js";
-import Safe from "@safe-global/protocol-kit";
-import { EthersAdapter } from "@safe-global/protocol-kit";
 import { SafeTransaction, SafeTransactionDataPartial } from "@safe-global/safe-core-sdk-types";
-import { AddressBookPlugin } from "./AddressBook";
-import { Signer } from "ethers";
-import { ethers } from "ethers";
-import SafeAPIKit from "@safe-global/api-kit";
 
+import { AddressBookPlugin } from "./AddressBook";
+import { CoreClient } from "@polywrap/core-js";
+import { EthersAdapter } from "@safe-global/protocol-kit";
+import Safe from "@safe-global/protocol-kit";
+import SafeAPIKit from "@safe-global/api-kit";
+import { Signer } from "ethers";
+import { Uri } from "@polywrap/client-js";
+import { ethers } from "ethers";
 
 export interface Log {
   blockNumber: bigint;
@@ -301,6 +300,26 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
     env?: Record<string, unknown>,
     uri?: string
   ) {
+    const safeSdk: Safe = await Safe.create({
+      ethAdapter: this.config.ethAdapter,
+      safeAddress: args.safeAddress,
+    });
+    const safeApi = new SafeAPIKit({
+      txServiceUrl: this.config.txServiceUrl,
+      ethAdapter: this.config.ethAdapter,
+    })
+
+    const transaction = await safeApi.getTransaction(args.safeTxHash);
+    console.log("tx", transaction);
+
+    const result = await safeSdk.signTransaction(transaction)
+    console.log("sign result", result);
+    
+    return {
+      transactionHash: args.safeTxHash,
+      signatures: Array.from(result.signatures.values())
+    };
+
     throw "not implemented"
     // const connection = await this._getConnection(client);
     // const _env = {
