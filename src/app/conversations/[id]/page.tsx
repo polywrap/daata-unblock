@@ -8,6 +8,7 @@ import { CHAT_SUGGESTIONS } from "@/lib/constants";
 import { ChatSuggestion } from "@/lib/types";
 import ChatSuggestions from "@/app/components/ChatSuggestions";
 import InvocationMessageBox from "./components/InvocationMessageBox";
+import InvocationResultBox from "./components/InvocationResultBox";
 import { MessageType } from "@/lib/models/message";
 import { OPTIMISTIC_CONVERSATION_ID } from "@/constants";
 import TextMessageBox from "./components/TextMessageBox";
@@ -110,10 +111,19 @@ const Conversation = () => {
                         key={message.id}
                         message={message}
                         conversationId={conversation.id}
+                        disabled={i !== conversation.messages.length - 1}
                       />
                     );
                   }
 
+                  break;
+                case MessageType.InvocationResultMessage:
+                  return (
+                    <InvocationResultBox
+                      type={message.ok ? "success" : "error"}
+                      result={message.result}
+                    ></InvocationResultBox>
+                  );
                   break;
                 case MessageType.TextMessage:
                   return <TextMessageBox key={message.id} message={message} />;

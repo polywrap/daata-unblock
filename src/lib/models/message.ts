@@ -32,4 +32,5 @@ export interface InvocationMessage extends Message {
 export interface InvocationResultMessage extends Message {
   kind: MessageType.InvocationResultMessage;
   result: string;
+  ok: boolean;
 }

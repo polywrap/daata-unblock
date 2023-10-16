@@ -1,25 +1,27 @@
 import ActionBox from "./ActionBox";
 import { InvocationMessage } from "@/lib/models/message";
-import InvocationResult from "@/app/components/InvocationResult";
+import { addOptimisticInvokeResultMessage } from "@/lib/optimisticUpdates/conversation";
 import clsx from "clsx";
 import { getMagic } from "@/lib/magic";
 import useInvoke from "@/mutations/useInvoke";
 import { useProviderStore } from "@/stores/providerStore";
+import { useQueryClient } from "@tanstack/react-query";
 import useSendInvocationResult from "@/mutations/useSendInvocationResult";
 import { useState } from "react";
 
 const InvocationMessageBox = ({
   message,
   conversationId,
+  disabled: disabled,
 }: {
   message: InvocationMessage;
   conversationId: string;
+  disabled: boolean;
 }) => {
   const { mutate: sendInvocationResult } =
     useSendInvocationResult(conversationId);
-  const { mutate: invoke, isLoading, error, data } = useInvoke();
-  const [invocationData, setInvocationData] = useState<any>(undefined);
-
+  const { mutate: invoke, isLoading, data } = useInvoke();
+  const queryClient = useQueryClient();
   const { provider } = useProviderStore();
 
   const isWalletConnected = !!provider;
@@ -41,21 +43,33 @@ const InvocationMessageBox = ({
       {
         onSuccess: (data) => {
           console.log(data);
-          setInvocationData(data);
+          addOptimisticInvokeResultMessage(
+            conversationId,
+            JSON.stringify({ result: data, error: null }),
+            true,
+            queryClient
+          );
           sendInvocationResult({
             functionName: message.functionName,
             result: JSON.stringify({ result: data, error: null }),
+            ok: true,
           });
         },
         onError: (error) => {
           console.log(error);
-          setInvocationData(error);
+          addOptimisticInvokeResultMessage(
+            conversationId,
+            JSON.stringify({ result: null, error: error }),
+            false,
+            queryClient
+          );
           sendInvocationResult({
             functionName: message.functionName,
             result: JSON.stringify({
-              result: data,
+              result: null,
               error: (error as any).message,
             }),
+            ok: false,
           });
         },
       }
@@ -82,52 +96,37 @@ const InvocationMessageBox = ({
   return (
     <li className="px-6 py-4 rounded-lg border-2 bg-white border-primary-300 flex flex-col gap-4">
       <h2 className="font-bold">Action</h2>
-      <div className="text-sm text-gray-500">
-        {message.description}
-      </div>
+      <div className="text-sm text-gray-500">{message.description}</div>
       <div className="flex flex-col gap-2">
         <ActionBox invocation={invocation} />
       </div>
-      {!isWalletConnected && message.requiresSign ? (
+      {!isWalletConnected && message.requiresSign && !disabled ? (
         <button
-          disabled={isWalletConnecting}
+          disabled={isWalletConnecting || disabled}
           onClick={() => {
             onConnectWallet();
           }}
-          className="rounded-lg bg-primary-500 w-full px-4 py-3 text-white font-bold disabled:bg-primary-300 disabled:animate-pulse"
+          className={clsx(
+            "rounded-lg bg-primary-500 w-full px-4 py-3 text-white font-bold disabled:bg-primary-300",
+            { "animate-pulse": isWalletConnecting }
+          )}
         >
           Connect wallet
         </button>
       ) : (
         <button
-          disabled={!!data || isLoading}
+          disabled={isLoading || disabled}
           onClick={() => {
             onInvoke();
           }}
-          className={clsx("rounded-lg bg-primary-500 w-full px-4 py-3 text-white font-bold disabled:bg-primary-300", {"animate-pulse": isLoading})}
+          className={clsx(
+            "rounded-lg bg-primary-500 w-full px-4 py-3 text-white font-bold disabled:bg-primary-300",
+            { "animate-pulse": isLoading }
+          )}
         >
-          Execute
+          {isLoading ? "Executing" : "Execute"}
         </button>
       )}
-      {isLoading ? (
-        <div>
-          <InvocationResult type={"loading"} text={"Invoking actions"} />
-        </div>
-      ) : null}
-      {data ? (
-        <div>
-          <InvocationResult
-            type={"success"}
-            text={`Actions executed successfully`}
-            data={invocationData}
-          />
-        </div>
-      ) : null}
-      {error ? (
-        <div>
-          <InvocationResult type={"error"} text={`Error executing actions`} data={invocationData} />
-        </div>
-      ) : null}
     </li>
   );
 };
