@@ -387,6 +387,26 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
     env?: Record<string, unknown>,
     uri?: string
   ): Promise<any> {
+    const safeSdk: Safe = await Safe.create({
+      ethAdapter: this.config.ethAdapter,
+      safeAddress: args.safeAddress,
+    });
+    const safeApi = new SafeAPIKit({
+      txServiceUrl: this.config.txServiceUrl,
+      ethAdapter: this.config.ethAdapter,
+    })
+
+    const transaction = await safeApi.getTransaction(args.safeTxHash);
+    console.log("tx", transaction);
+
+    const result = await safeSdk.executeTransaction(transaction)
+    console.log("sign result", result);
+    
+    return {
+      txHash: args.safeTxHash,
+      txResponse: result.transactionResponse
+    };
+
     throw "not implemented"
     // const safeSdk: Safe = await Safe.create({
     //   ethAdapter: this.config.ethAdapter,
