@@ -5,6 +5,7 @@ import * as Loader from "react-loader-spinner";
 import { useEffect, useRef, useState } from "react";
 
 import { CHAT_SUGGESTIONS } from "@/lib/constants";
+import { ChatSuggestion } from "@/lib/types";
 import ChatSuggestions from "@/app/components/ChatSuggestions";
 import InvocationMessageBox from "./components/InvocationMessageBox";
 import { MessageType } from "@/lib/models/message";
@@ -43,18 +44,32 @@ const Conversation = () => {
 
   const isLoading = isLoadingAddMessage || conversationIsOptimisticPlaceholder;
 
-  const lastMessage = conversation?.messages?.length ? conversation.messages[conversation.messages.length - 1] : undefined;
+  const lastMessage = conversation?.messages?.length
+    ? conversation.messages[conversation.messages.length - 1]
+    : undefined;
 
   const shouldDisableInput =
     isLoading ||
     !conversation ||
     conversation.completed ||
-    conversationIsOptimisticPlaceholder || 
-    (lastMessage?.kind === MessageType.InvocationMessage && lastMessage.method !== "askQuestion");
+    conversationIsOptimisticPlaceholder ||
+    (lastMessage?.kind === MessageType.InvocationMessage &&
+      lastMessage.method !== "askQuestion");
 
-  const onSuggestionSelect = (prompt: string) => {
-    setPromptValue(prompt);
-    promptRef.current?.focus();
+  const onSuggestionSelect = (suggestion: ChatSuggestion) => {
+    setPromptValue(suggestion.prompt);
+    const setFocus = () => {
+      promptRef.current?.focus();
+      if (suggestion.preselect) {
+        promptRef.current?.setSelectionRange(
+          suggestion.preselect.from,
+          suggestion.preselect.to
+        );
+      }
+    };
+    setTimeout(() => {
+      setFocus();
+    });
   };
 
   return (

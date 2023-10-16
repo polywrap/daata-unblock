@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 
 import { CHAT_SUGGESTIONS } from "@/lib/constants";
+import { ChatSuggestion } from "@/lib/types";
 import ChatSuggestions from "./components/ChatSuggestions";
 import Image from "next/image";
 import SendIcon from "../../public/send.svg";
@@ -23,9 +24,20 @@ export default function Home() {
     onSubmit();
   };
 
-  const onSuggestionSelect = (prompt: string) => {
-    setinputValue(prompt);
-    inputRef.current?.focus();
+  const onSuggestionSelect = (suggestion: ChatSuggestion) => {
+    setinputValue(suggestion.prompt);
+    const setFocus = () => {
+      inputRef.current?.focus();
+      if (suggestion.preselect) {
+        inputRef.current?.setSelectionRange(
+          suggestion.preselect.from,
+          suggestion.preselect.to
+        );
+      }
+    };
+    setTimeout(() => {
+      setFocus();
+    });
   };
 
   return (
