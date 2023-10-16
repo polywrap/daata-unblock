@@ -158,15 +158,15 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
       ethAdapter: this.config.ethAdapter,
     });
 
-    const transaction = await safeApi.getTransaction(args.safeTxHash);
-    console.log("tx", transaction);
+    const signature = await safeSdk.signTransactionHash(args.safeTxHash);
+    console.log("signature", signature);
 
-    const result = await safeSdk.signTransaction(transaction);
-    console.log("sign result", result);
+    const response = await safeApi.confirmTransaction(args.safeTxHash, signature.data)
+    console.log("signature response", response);
 
     return {
       transactionHash: args.safeTxHash,
-      signatures: Array.from(result.signatures.values()),
+      signature: response.signature
     };
   }
 
