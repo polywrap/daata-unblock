@@ -7,7 +7,7 @@ import { EthersAdapter } from "@safe-global/protocol-kit";
 import { SafeTransaction, SafeTransactionDataPartial } from "@safe-global/safe-core-sdk-types";
 import { AddressBookPlugin } from "./AddressBook";
 import { Signer } from "ethers";
-import ethers from "ethers";
+import { ethers } from "ethers";
 import SafeAPIKit from "@safe-global/api-kit";
 
 
@@ -171,7 +171,7 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
     uri?: string
   ) {
     const safeTransactionData: SafeTransactionDataPartial = {
-      to: ethers.utils.getAddress(args.to),
+      to: ethers.getAddress(args.to),
       value: args.value,
       data: args.data
     }
