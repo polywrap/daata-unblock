@@ -118,7 +118,7 @@ const Conversation = () => {
                   break;
                 case MessageType.InvocationResultMessage:
                   return (
-                    <InvocationResult text="asdf" type={"success"} data={message.result}></InvocationResult>
+                    <InvocationResult text="asdf" type={message.} data={message.result}></InvocationResult>
                   );
                   break;
                 case MessageType.TextMessage:
