@@ -193,17 +193,16 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
 
     const signedSafeTransaction = await safeSdk.signTransaction(safeTransaction);
 
-    // const signerAddrResult = await client.invoke<any>({
-    //   uri: new Uri("wrapscan.io/polywrap/ethers@1.1.1"),
-    //   method: "getSignerAddress",
-    //   args: {},
-    // });
+    const signerAddrResult = await client.invoke<any>({
+      uri: new Uri("wrapscan.io/polywrap/ethers@1.1.1"),
+      method: "getSignerAddress",
+      args: {},
+    });
 
-    // if (!signerAddrResult.ok) {
-    //   throw signerAddrResult.error;
-    // }
-
-    const signerAddr = await this.config.signer.getAddress();
+    if (!signerAddrResult.ok) {
+      throw signerAddrResult.error;
+    }
+    const signerAddr = ethers.utils.getAddress(signerAddrResult.value);
 
     if (!signedSafeTransaction.signatures.has(signerAddr)) {
       throw "failed to sign transaction!"
