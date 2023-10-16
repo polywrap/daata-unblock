@@ -208,14 +208,17 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
       throw "failed to sign transaction!"
     }
 
-    await safeApi.proposeTransaction({
+    const proposeTransactionArgs = {
       safeAddress: args.safeAddress,
       safeTransactionData: safeTransaction.data,
       safeTxHash: txHash,
       senderAddress: signerAddr,
       senderSignature: signedSafeTransaction.signatures.get(signerAddr)!.data,
       origin: "https://daata-unblock.vercel.app/"
-    })
+    }
+
+    console.log(proposeTransactionArgs);
+    await safeApi.proposeTransaction(proposeTransactionArgs)
 
     return {
       safeTxHash: txHash,
