@@ -447,6 +447,11 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
     env?: Record<string, unknown>,
     uri?: string
   ) {
+    const connection = await this._getConnection(client);
+    const _env = {
+      safeAddress: args.safeAddress,
+      connection: connection,
+    };
     const encodeAddOwnerWithThresholdDataResult = await client.invoke<string>({
       uri: new Uri("wrapscan.io/polywrap/protocol-kit@0.1.0"),
       method: "encodeAddOwnerWithThresholdData",
@@ -454,9 +459,7 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
         ownerAddress: args.ownerAddress,
         threshold: args.newThreshold,
       },
-      env: {
-        safeAddress: args.safeAddress,
-      },
+      env: _env,
     });
 
     if (!encodeAddOwnerWithThresholdDataResult.ok) {
@@ -482,6 +485,11 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
     env?: Record<string, unknown>,
     uri?: string
   ) {
+    const connection = await this._getConnection(client);
+    const _env = {
+      safeAddress: args.safeAddress,
+      connection: connection,
+    };
     const encodeRemoveOwnerDataResult = await client.invoke<string>({
       uri: new Uri("wrapscan.io/polywrap/protocol-kit@0.1.0"),
       method: "encodeRemoveOwnerData",
@@ -489,9 +497,7 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
         ownerAddress: args.ownerAddress,
         threshold: args.newThreshold,
       },
-      env: {
-        safeAddress: args.safeAddress,
-      },
+      env: _env,
     });
 
     if (!encodeRemoveOwnerDataResult.ok) {
@@ -517,15 +523,18 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
     env?: Record<string, unknown>,
     uri?: string
   ) {
+    const connection = await this._getConnection(client);
+    const _env = {
+      safeAddress: args.safeAddress,
+      connection: connection,
+    };
     const encodeChangeThresholdDataResult = await client.invoke<string>({
       uri: new Uri("wrapscan.io/polywrap/protocol-kit@0.1.0"),
       method: "encodeChangeThresholdData",
       args: {
         threshold: args.newThreshold,
       },
-      env: {
-        safeAddress: args.safeAddress,
-      },
+      env: _env,
     });
 
     if (!encodeChangeThresholdDataResult.ok) {
@@ -551,15 +560,18 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
     env?: Record<string, unknown>,
     uri?: string
   ) {
+    const connection = await this._getConnection(client);
+    const _env = {
+      safeAddress: args.safeAddress,
+      connection: connection,
+    };
     const encodeEnableModuleDataResult = await client.invoke<string>({
       uri: new Uri("wrapscan.io/polywrap/protocol-kit@0.1.0"),
       method: "encodeEnableModuleData",
       args: {
         moduleAddress: args.moduleAddress,
       },
-      env: {
-        safeAddress: args.safeAddress,
-      },
+      env: _env,
     });
 
     if (!encodeEnableModuleDataResult.ok) {
@@ -585,15 +597,18 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
     env?: Record<string, unknown>,
     uri?: string
   ) {
+    const connection = await this._getConnection(client);
+    const _env = {
+      safeAddress: args.safeAddress,
+      connection: connection,
+    };
     const encodeDisableModuleDataResult = await client.invoke<string>({
       uri: new Uri("wrapscan.io/polywrap/protocol-kit@0.1.0"),
       method: "encodeDisableModuleData",
       args: {
         moduleAddress: args.moduleAddress,
       },
-      env: {
-        safeAddress: args.safeAddress,
-      },
+      env: _env
     });
 
     if (!encodeDisableModuleDataResult.ok) {
