@@ -201,11 +201,12 @@ export class SafeTxPlugin extends PluginModule<SafeTxPluginConfig> {
     }
 
     return await client.invoke<unknown>({
-      uri: new Uri("plugin/safe-api-kit@1.0"),
+      uri: new Uri("wrapscan.io/polywrap/protocol-kit@0.1.0"),
       method: "addSignature",
       args: {
         tx: safeTransactionResult.value.data,
       },
+      env: _env
     });
 
     // const safeSdk: Safe = await Safe.create({
